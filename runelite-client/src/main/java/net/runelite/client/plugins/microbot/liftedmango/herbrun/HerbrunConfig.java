@@ -171,7 +171,7 @@ public interface HerbrunConfig extends Config {
             section = settingsSection
     )
     default HerbrunInfo.trollheimTeleport TROLLHEIMTELEPORT() {
-        return HerbrunInfo.trollheimTeleport.STONY_BASALT;
+        return HerbrunInfo.trollheimTeleport.TROLLHEIM_TAB;
     }
 
     // Location toggles for each patch location
