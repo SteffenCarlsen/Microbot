@@ -214,6 +214,7 @@ public class DemonicGorillaScript extends Script {
 
     private void handleFighting(DemonicGorillaConfig config) {
         if (currentTarget == null || currentTarget.isDead()) {
+            npcAnimationCount = 0;
             logOnceToChat("Target is null or dead");
             handleNewTargetAndLootOld(config);
         }
@@ -236,8 +237,8 @@ public class DemonicGorillaScript extends Script {
         } else {
             outOfCombatTime = null;
         }
-        if (outOfCombatTime != null && Instant.now().isAfter(outOfCombatTime.plusSeconds(8))) {
-            logOnceToChat("Out of combat for 30 seconds, forcing new target");
+        if (outOfCombatTime != null && Instant.now().isAfter(outOfCombatTime.plusSeconds(6))) {
+            logOnceToChat("Out of combat for 6 seconds, forcing new target");
             currentTarget = getTarget(true);
         }
 
@@ -326,7 +327,7 @@ public class DemonicGorillaScript extends Script {
             var location = currentTarget.getWorldLocation();
 
             // Handle premature prayer switching
-            if (npcAnimationCount >= 4 && currentAnimation == -1 && gameTickCount != lastGameTick) {
+            /*if (npcAnimationCount >= 4 && currentAnimation == -1 && gameTickCount != lastGameTick) {
                 logOnceToChat("Demonic Gorilla attacked 3 times - Prematurely changing prayer");
                 if (lastAttackAnimation == DEMONIC_GORILLA_MAGIC_ATTACK) {
                     if (lastLocation.distanceTo(location) > 1) {
@@ -357,7 +358,7 @@ public class DemonicGorillaScript extends Script {
                 if (currentAnimation == lastRealAnimation) {
                     npcAnimationCount++;
                 }
-            }
+            }*/
 
             // Handle normal prayer switching
             if (currentAnimation == DEMONIC_GORILLA_MAGIC_ATTACK) {
@@ -367,7 +368,6 @@ public class DemonicGorillaScript extends Script {
             } else if (currentAnimation == DEMONIC_GORILLA_MELEE_ATTACK) {
                 newDefensivePrayer = Rs2PrayerEnum.PROTECT_MELEE;
             } else if (currentAnimation == DEMONIC_GORILLA_PRAYER_SWITCH) {
-                logOnceToChat("Handling gear switch based on prayer switching");
                 handleGearSwitching(config);
             }
 
