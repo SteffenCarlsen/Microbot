@@ -326,7 +326,7 @@ public class DemonicGorillaScript extends Script {
             var location = currentTarget.getWorldLocation();
 
             // Handle premature prayer switching
-            if (npcAnimationCount >= 3 && currentAnimation == -1 && gameTickCount != lastGameTick) {
+            if (npcAnimationCount >= 4 && currentAnimation == -1 && gameTickCount != lastGameTick) {
                 logOnceToChat("Demonic Gorilla attacked 3 times - Prematurely changing prayer");
                 if (lastAttackAnimation == DEMONIC_GORILLA_MAGIC_ATTACK) {
                     if (lastLocation.distanceTo(location) > 1) {

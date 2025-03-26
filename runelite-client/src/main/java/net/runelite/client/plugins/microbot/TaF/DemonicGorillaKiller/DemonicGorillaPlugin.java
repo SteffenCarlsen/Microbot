@@ -118,11 +118,9 @@ public class DemonicGorillaPlugin extends Plugin {
     public void onProjectileMoved(ProjectileMoved event) {
         final Projectile projectile = event.getProjectile();
         var dist = projectile.getTarget().distanceTo(Microbot.getClient().getLocalPlayer().getLocalLocation());
-        var dist2 = Rs2Player.getLocalLocation().distanceTo(projectile.getTarget());
-        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
+        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000)) {
             demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
             demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
-            Microbot.log("Rock thrown at player");
         }
     }
 
