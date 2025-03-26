@@ -1884,7 +1884,8 @@
 2405 3420 0	2409 9812 0	Enter;Cave entrance;17209									
 2405 3419 0	2409 9812 0	Enter;Cave entrance;17209									
 2405 3418 0	2409 9812 0	Enter;Cave entrance;17209									
-											
+2435 3519 0 1987 5568 0 Pass-through;Opening;28807
+
 # Tolna's Rift											
 3309 3452 0	3297 9824 0	Enter;Rift;13968									
 3297 9824 0	3312 3450 0	Climb-up;Rope;13999									
