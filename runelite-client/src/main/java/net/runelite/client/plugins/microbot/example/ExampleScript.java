@@ -1,8 +1,11 @@
 package net.runelite.client.plugins.microbot.example;
 
 import net.runelite.api.HeadIcon;
+import net.runelite.api.events.MenuOptionClicked;
+import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.Script;
+import net.runelite.client.plugins.microbot.util.gameobject.Rs2GameObject;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
 import net.runelite.client.plugins.microbot.util.npc.Rs2NpcModel;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
@@ -21,36 +24,10 @@ public class ExampleScript extends Script {
                 if (!Microbot.isLoggedIn()) return;
                 if (!super.run()) return;
                 long startTime = System.currentTimeMillis();
-
-                //CODE HERE
-
-                Rs2NpcModel npc = (Rs2NpcModel) Rs2Player.getInteracting();
-
-
-                System.out.println(npc.getName());
-
-           //     var currentTarget = Rs2Npc.getNpc("guard");
-
-              //  var headIcon = Rs2Reflection.getHeadIcon(currentTarget);
-
-              //  Actor actor = currentTarget;
-
-
-
-          //      Microbot.getClientThread().runOnClientThread(() ->  { System.out.println(Microbot.getClient().getLocalPlayer().getInteracting().getName()); return null;});
-
-                //System.out.println(Microbot.getClient().getLocalPlayer().getInteracting().getName());
-//               System.out.println(Microbot.getClient().getLocalPlayer().getInteracting() == actor);
-
-         //       System.out.println(Microbot.getClient().getLocalPlayer().getInteracting() == currentTarget);
-
-           //     sleepUntil(() -> Microbot.getClient().getLocalPlayer().getInteracting() == currentTarget, 3000);
-
-               // System.out.println(headIcon.name());
-
-                long endTime = System.currentTimeMillis();
-                long totalTime = endTime - startTime;
-                System.out.println("Total time for loop " + totalTime);
+                var objects = Rs2GameObject.getObjectIdsByName("Node");
+                for (var o : objects) {
+                    System.out.println(o);
+                }
 
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
@@ -79,4 +56,10 @@ public class ExampleScript extends Script {
     public void shutdown() {
         super.shutdown();
     }
+    @Subscribe
+    public void onMenuOptionClicked(MenuOptionClicked event) {
+        Microbot.log("EventId " + event.getId());
+    }
+
+
 }

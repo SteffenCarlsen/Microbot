@@ -756,7 +756,7 @@ public class DemonicGorillaScript extends Script {
         var gePrice = Rs2GrandExchange.getPrice(item.getItem().getId());
         TotalLootValue += (gePrice == -1 ? item.getItem().getPrice() : gePrice) * item.getTileItem().getQuantity();
     }
-
+    
     private void lootAndScatterMalicious() {
         String ashesName = "Malicious ashes";
 
