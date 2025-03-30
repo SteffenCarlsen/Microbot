@@ -2,10 +2,8 @@ package net.runelite.client.plugins.microbot.TaF.DemonicGorillaKiller;
 
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
-import net.runelite.api.InventoryID;
-import net.runelite.api.Item;
-import net.runelite.api.ItemComposition;
-import net.runelite.api.Projectile;
+import net.runelite.api.*;
+import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameTick;
 import net.runelite.api.events.ProjectileMoved;
 import net.runelite.client.config.ConfigManager;
@@ -15,6 +13,7 @@ import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.util.combat.Rs2Combat;
+import net.runelite.client.plugins.microbot.util.containers.FixedSizeQueue;
 import net.runelite.client.plugins.microbot.util.misc.TimeUtils;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
 import net.runelite.client.ui.overlay.OverlayManager;
@@ -119,14 +118,19 @@ public class DemonicGorillaPlugin extends Plugin {
         final Projectile projectile = event.getProjectile();
         var dist = projectile.getTarget().distanceTo(Microbot.getClient().getLocalPlayer().getLocalLocation());
         var dist2 = Rs2Player.getLocalLocation().distanceTo(projectile.getTarget());
+
         if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
             demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
             demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
         }
     }
 
+    public static FixedSizeQueue<WorldPoint> lastLocation = new FixedSizeQueue<>(2);
     @Subscribe
     public void onGameTick(GameTick gameTick) {
+        var currentLocation = Rs2Player.getWorldLocation();
+        DemonicGorillaScript.playerMoved = !lastLocation.contains(currentLocation);
+        lastLocation.add(currentLocation);
         DemonicGorillaScript.gameTickCount++;
     }
 }

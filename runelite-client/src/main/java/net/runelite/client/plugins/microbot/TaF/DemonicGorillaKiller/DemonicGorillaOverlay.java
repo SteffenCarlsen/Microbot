@@ -49,19 +49,7 @@ public class DemonicGorillaOverlay extends OverlayPanel {
                     .leftColor(Color.WHITE)
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Loot attempted: " + DemonicGorillaScript.lootAttempted)
-                    .leftColor(Color.WHITE)
-                    .build());
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("NPC animation count: " + DemonicGorillaScript.npcAnimationCount)
-                    .leftColor(Color.WHITE)
-                    .build());
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Last attack animation: " + DemonicGorillaScript.lastAttackAnimation)
-                    .leftColor(Color.WHITE)
-                    .build());
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Last animation: " + DemonicGorillaScript.lastAnimation)
+                    .left("Total loot: " + DemonicGorillaScript.TotalLootValue)
                     .leftColor(Color.WHITE)
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
@@ -69,7 +57,7 @@ public class DemonicGorillaOverlay extends OverlayPanel {
                     .leftColor(Color.WHITE)
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Current index: " + DemonicGorillaScript.currentTarget != null ? String.valueOf(DemonicGorillaScript.currentTarget.getIndex()) : "null")
+                    .left("Current gear: " + DemonicGorillaScript.currentGear)
                     .leftColor(Color.WHITE)
                     .build());
 
