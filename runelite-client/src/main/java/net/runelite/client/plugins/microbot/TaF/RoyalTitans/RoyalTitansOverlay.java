@@ -37,18 +37,11 @@ public class RoyalTitansOverlay extends OverlayPanel {
                     .left(plugin.royalTitansScript.state.name())
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Substate: " + plugin.royalTitansScript.subState)
-                    .build());
-            panelComponent.getChildren().add(LineComponent.builder()
                     .left("Duo partner: " + config.teammateName())
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Duo status: " + plugin.royalTitansScript.state.name())
                     .build());
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Enrage tile: " + plugin.royalTitansScript.enrageTile.getWorldLocation())
-                    .build());
-
 
         } catch(Exception ex) {
             System.out.println(ex.getMessage());
