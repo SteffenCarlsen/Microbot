@@ -29,7 +29,10 @@ public class RoyalTitansOverlay extends OverlayPanel {
                     .text("TaF's Royal Titan Plugin v" + RoyalTitansScript.version)
                     .color(Color.decode("#a4ffff"))
                     .build());
-
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Running: " + plugin.getTimeRunning())
+                    .leftColor(Color.WHITE)
+                    .build());
             panelComponent.getChildren().add(LineComponent.builder()
                     .left(plugin.royalTitansScript.state.name())
                     .build());

@@ -11,6 +11,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.microbot.Microbot;
+import net.runelite.client.plugins.microbot.util.misc.TimeUtils;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
 import net.runelite.client.plugins.microbot.util.tile.Rs2Tile;
 import net.runelite.client.plugins.microbot.util.walker.Rs2Walker;
@@ -18,12 +19,13 @@ import net.runelite.client.ui.overlay.OverlayManager;
 
 import javax.inject.Inject;
 import java.awt.*;
+import java.time.Instant;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
 @PluginDescriptor(
-        name = PluginDescriptor.Mocrosoft + "Royal Titans",
+        name = PluginDescriptor.TaFCat + "Royal Titans",
         description = "Kills the Royal Titans boss with another bot",
         tags = {"Combat", "bossing", "TaF", "Royal Titans", "Ice giant", "Fire giant", "Duo"},
         enabledByDefault = false
@@ -48,9 +50,10 @@ public class RoyalTitansPlugin extends Plugin {
     private RoyalTitansOverlay royalTitansOverlay;
     @Inject
     public RoyalTitansScript royalTitansScript;
-
+    private Instant scriptStartTime;
     @Override
     protected void startUp() throws AWTException {
+        scriptStartTime = Instant.now();
         scheduledExecutorService = Executors.newScheduledThreadPool(50);
         if (overlayManager != null) {
             overlayManager.add(royalTitansOverlay);
@@ -66,6 +69,10 @@ public class RoyalTitansPlugin extends Plugin {
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
         }
+    }
+
+    protected String getTimeRunning() {
+        return scriptStartTime != null ? TimeUtils.getFormattedDurationBetween(scriptStartTime, Instant.now()) : "";
     }
 
     @Subscribe

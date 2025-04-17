@@ -104,12 +104,12 @@ public interface RoyalTitansConfig extends Config {
     @ConfigItem(
             keyName = "specialAttackWeapon",
             name = "Special attack gear",
-            description = "The ID of the special attack weapon to use and all accompanying gear.",
+            description = "The InventorySetup for the use of your special attack weapon.",
             section = combatSection,
             position = 1
     )
-    default String specialAttackWeapon() {
-        return "";
+    default InventorySetup specialAttackWeapon() {
+        return null;
     }
 
     @ConfigItem(
@@ -204,33 +204,33 @@ public interface RoyalTitansConfig extends Config {
     @ConfigItem(
             keyName = "meleeEquipment",
             name = "Melee equipment",
-            description = "The IDs of the melee armor to equip.",
+            description = "The InventorySetup of the melee armor to equip.",
             section = equipmentSettings,
             position = 0
     )
-    default String meleeEquipment() {
-        return "";
+    default InventorySetup meleeEquipment() {
+        return null;
     }
     @ConfigItem(
             keyName = "rangedEquipment",
             name = "Range equipment",
-            description = "The IDs of the range armor to equip.",
+            description = "The InventorySetup of the range armor to equip.",
             section = equipmentSettings,
             position = 1
     )
-    default String rangedEquipment() {
-        return "";
+    default InventorySetup rangedEquipment() {
+        return null;
     }
 
     @ConfigItem(
             keyName = "magicEquipment",
             name = "Magic equipment",
-            description = "The IDs of the magic armor to equip.",
+            description = "The InventorySetup of the magic armor to equip.",
             section = equipmentSettings,
             position = 2
     )
-    default String magicEquipment() {
-        return "";
+    default InventorySetup magicEquipment() {
+        return null;
     }
 
     // Banking & Supply
