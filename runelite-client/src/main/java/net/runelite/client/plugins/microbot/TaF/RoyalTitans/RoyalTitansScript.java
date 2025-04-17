@@ -542,9 +542,6 @@ public class RoyalTitansScript extends Script {
         } else {
             inventoryLoaded = true;
         }
-        if (inventoryLoaded) {
-            inventorySetup.sortInventory();
-        }
 
         if (equipmentLoaded && inventoryLoaded) {
             Rs2Bank.closeBank();
