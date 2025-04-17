@@ -69,7 +69,7 @@ public interface RoyalTitansConfig extends Config {
     @ConfigItem(
             keyName = "currentBotInstanceOwner",
             name = "Are you instance owner?",
-            description = "If enabled, this bot instance will create the instance, othewise, it will join the teammates instance",
+            description = "If enabled, this bot instance will create the instance, otherwise, it will join the teammates instance",
             section = generalSection,
             position = 2
     )
@@ -103,13 +103,13 @@ public interface RoyalTitansConfig extends Config {
     }
     @ConfigItem(
             keyName = "specialAttackWeapon",
-            name = "Special attack weapon",
-            description = "The ID of the special attack weapon to use. If 0, will use current weapon.",
+            name = "Special attack gear",
+            description = "The ID of the special attack weapon to use and all accompanying gear.",
             section = combatSection,
             position = 1
     )
-    default int specialAttackWeapon() {
-        return 0;
+    default String specialAttackWeapon() {
+        return "";
     }
 
     @ConfigItem(
@@ -244,13 +244,23 @@ public interface RoyalTitansConfig extends Config {
     default InventorySetup inventorySetup() {
         return null;
     }
+    @ConfigItem(
+            keyName = "emergencyTeleport",
+            name = "Emergency teleport item ID",
+            description = "The ID of the item to use to teleport out of the boss room. If set to 0 or no value, it will exit the room normally and walk to a bank",
+            section = supplySettings,
+            position = 1
+    )
+    default int emergencyTeleport() {
+        return 0;
+    }
 
     @ConfigItem(
             keyName = "boostedStatsThreshold",
             name = "% Boosted Stats Threshold",
             description = "The threshold for using a potion when the boosted stats are below the maximum.",
             section = supplySettings,
-            position = 5
+            position = 2
     )
     @Range(
             min = 1,
