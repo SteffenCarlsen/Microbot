@@ -34,7 +34,7 @@ public class RoyalTitansOverlay extends OverlayPanel {
                     .leftColor(Color.WHITE)
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left(plugin.royalTitansScript.state.name())
+                    .left("State:" + plugin.royalTitansScript.state.name())
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Substate: " + plugin.royalTitansScript.subState)
@@ -43,7 +43,7 @@ public class RoyalTitansOverlay extends OverlayPanel {
                     .left("Duo partner: " + config.teammateName())
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Duo status: " + plugin.royalTitansScript.state.name())
+                    .left("Kills: " + plugin.royalTitansScript.kills)
                     .build());
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Enrage tile: " + plugin.royalTitansScript.enrageTile.getWorldLocation())

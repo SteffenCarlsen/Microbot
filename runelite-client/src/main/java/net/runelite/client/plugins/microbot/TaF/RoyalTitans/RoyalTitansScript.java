@@ -1,9 +1,14 @@
 package net.runelite.client.plugins.microbot.TaF.RoyalTitans;
 
+import com.google.common.collect.HashMultiset;
+import com.google.common.collect.Multiset;
+import net.runelite.api.Item;
+import net.runelite.api.ItemContainer;
 import net.runelite.api.Skill;
 import net.runelite.api.Tile;
 import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
+import net.runelite.api.gameval.InventoryID;
 import net.runelite.api.gameval.ItemID;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.Script;
@@ -40,6 +45,7 @@ import java.util.Objects;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
+import static net.runelite.client.plugins.microbot.Microbot.isLoggedIn;
 import static net.runelite.client.plugins.microbot.util.antiban.enums.ActivityIntensity.EXTREME;
 import static net.runelite.client.plugins.microbot.util.prayer.Rs2Prayer.disableAllPrayers;
 
@@ -70,7 +76,7 @@ public class RoyalTitansScript extends Script {
     public String subState = "";
     private boolean LootedTitanLastIteration = false;
     private int[] LOOT_LIST = new int[]{ItemID.GIANTSOUL_AMULET_UNCHARGED, ItemID.MYSTIC_VIGOUR_PRAYER_SCROLL};
-
+    public int kills = 0;
 
     {
         Microbot.enableAutoRunOn = false;
@@ -88,8 +94,8 @@ public class RoyalTitansScript extends Script {
         Rs2AntibanSettings.moveMouseRandomly = true;
         Rs2AntibanSettings.moveMouseRandomlyChance = 0.04;
         Rs2Antiban.setActivityIntensity(EXTREME);
+        kills = 0;
     }
-
     public boolean run(RoyalTitansConfig config) {
         isRunning = true;
         enrageTile = null;
@@ -103,6 +109,7 @@ public class RoyalTitansScript extends Script {
             try {
                 if (!Microbot.isLoggedIn()) return;
                 if (!super.run()) return;
+                if (!isRunning) return;
                 switch (state) {
                     case BANKING:
                         handleBanking(config);
@@ -262,6 +269,7 @@ public class RoyalTitansScript extends Script {
                 break;
         }
         if (looted) {
+            kills++;
             Rs2Player.waitForAnimation(1200);
             sleepUntil(() -> Rs2Inventory.waitForInventoryChanges(1200));
             LootedTitanLastIteration = true;
@@ -298,6 +306,7 @@ public class RoyalTitansScript extends Script {
         }
         if (shouldLeave) {
             if (config.emergencyTeleport() != 0) {
+                enrageTile = null;
                 Rs2Inventory.interact(config.emergencyTeleport(), config.emergencyTeleport() == 8013 ? "Outside" : "Break");
                 Rs2Player.waitForAnimation(1200);
             }
@@ -349,6 +358,9 @@ public class RoyalTitansScript extends Script {
         {
             return;
         }
+        if (enrageTile == null) {
+            return;
+        }
         Rs2InventorySetup meleeInventorySetup = new Rs2InventorySetup(config.meleeEquipment(), mainScheduledFuture);
         Rs2InventorySetup magicInventorySetup = new Rs2InventorySetup(config.rangedEquipment(), mainScheduledFuture);
         Rs2InventorySetup rangedInventorySetup = new Rs2InventorySetup(config.magicEquipment(), mainScheduledFuture);
@@ -384,9 +396,11 @@ public class RoyalTitansScript extends Script {
             if (fireTitan != null && !fireTitan.isDead()) {
                 Rs2Npc.attack(fireTitan);
                 handleSpecialAttacks(config, fireTitan);
+                return;
             } else if (iceTitan != null) {
                 Rs2Npc.attack(iceTitan);
                 handleSpecialAttacks(config, iceTitan);
+                return;
             }
         }
         // Both bosses alive - Handle focus
@@ -514,8 +528,9 @@ public class RoyalTitansScript extends Script {
 
         for (WorldPoint tile : nearbyTiles) {
             // Tiles outside the arena returns true for isWalkable - Discard them
-            if (tile.getRegionX() > MELEE_TITAN_ICE_REGION_X - 1 ||
-                    tile.getRegionX() < MELEE_TITAN_FIRE_REGION_X + 1) {
+            if (tile.getRegionX() == MELEE_TITAN_FIRE_REGION_X ||
+                    (tile.getRegionX() > MELEE_TITAN_FIRE_REGION_X && tile.getRegionX() < MELEE_TITAN_ICE_REGION_X))
+            {
                 continue;
             }
             final LocalPoint location = LocalPoint.fromWorld(Microbot.getClient(), tile);
@@ -562,7 +577,7 @@ public class RoyalTitansScript extends Script {
                             return;
                         }
                         Rs2Widget.clickWidget("Join a fight.");
-                        sleep(600, 1200);
+                        sleep(800, 1200);
                         Rs2Keyboard.typeString(config.teammateName());
                         sleep(600, 1200);
                         Rs2Keyboard.keyPress(KeyEvent.VK_ENTER);
@@ -616,8 +631,27 @@ public class RoyalTitansScript extends Script {
             travelStatus = TravelStatus.TO_TITANS;
             state = BotStatus.TRAVELLING;
         } else {
-            Microbot.log("Failed to load inventory/equipment");
-            shutdown();
+            var items = inventorySetup.getEquipmentItems();
+            var inventory = inventorySetup.getInventoryItems();
+            for (var item : items) {
+                if (item != null && item.getId() != -1) {
+                    Rs2Bank.wearItem(item.getName(), true);
+                }
+            }
+            Rs2Bank.depositAll();
+            for (var item : inventory) {
+                if (item != null && item.getId() != -1) {
+                    Rs2Bank.withdrawX(item.getName(), item.getQuantity(), true);
+                }
+            }
+            if (inventorySetup.doesInventoryMatch() && inventorySetup.doesEquipmentMatch()) {
+                Rs2Bank.closeBank();
+                travelStatus = TravelStatus.TO_TITANS;
+                state = BotStatus.TRAVELLING;
+            } else {
+                Microbot.log("Failed to load inventory or equipment");
+                shutdown();
+            }
         }
     }
 
@@ -628,6 +662,7 @@ public class RoyalTitansScript extends Script {
         state = BotStatus.BANKING;
         travelStatus = TravelStatus.TO_BANK;
         enrageTile = null;
+        kills = 0;
         disableAllPrayers();
         if (mainScheduledFuture != null && !mainScheduledFuture.isCancelled()) {
             mainScheduledFuture.cancel(true);

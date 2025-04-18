@@ -65,6 +65,7 @@ public class RoyalTitansPlugin extends Plugin {
     @Override
     protected void shutDown() {
         royalTitansScript.shutdown();
+        scriptStartTime = null;
         overlayManager.remove(royalTitansOverlay);
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
@@ -102,6 +103,7 @@ public class RoyalTitansPlugin extends Plugin {
                 royalTitansScript.enrageTile = tile;
                 scheduledExecutorService.schedule(() -> {
                     if (!Rs2Player.getWorldLocation().equals(tile.getWorldLocation())) {
+                        Rs2Walker.walkFastCanvas(tile.getWorldLocation());
                         Rs2Walker.walkFastCanvas(tile.getWorldLocation());
                     }
                 }, 100, TimeUnit.MILLISECONDS);
