@@ -121,6 +121,7 @@ public class DemonicGorillaScript extends Script {
                         break;
                     case FIGHTING:
                         handleFighting(config);
+                        //attemptLooting(config);
                         break;
                 }
             } catch (Exception ex) {
@@ -305,7 +306,7 @@ public class DemonicGorillaScript extends Script {
         if (!lootAttempted) {
             Rs2Player.eatAt(80);
             Rs2Player.drinkPrayerPotionAt(config.minEatPercent());
-            attemptLooting(config);
+            //attemptLooting(config);
             lootAttempted = true;
             if (currentTarget != null && currentTarget.isDead()) {
                 killCount++;
@@ -743,29 +744,22 @@ public class DemonicGorillaScript extends Script {
 
     private void attemptLooting(DemonicGorillaConfig config) {
         Microbot.log("Checking loot..");
-        Loot(config);
-        if (config.scatterAshes()) {
-            lootAndScatterMalicious();
+        if (currentTarget != null && currentTarget.isDead()) {
+            sleep(600,1200);
         }
+        Loot(config);
     }
 
     private void Loot(DemonicGorillaConfig config) {
-        //var nearbyItems = Rs2GroundItem.getAll(10);
-        sleep(1200, 1600);
         long startTime = System.currentTimeMillis();
         var itemsToLoot = parseGear(config.lootItems());
         for (var item : itemsToLoot) {
             var lootedItem = lootItem(item);
+            var looted2 = Rs2GroundItem.lootAtGePrice(10000);
         }
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         Microbot.log("Looting method took " + duration + " milliseconds");
-//        var itemsToPickup = Arrays.stream(nearbyItems).filter(item -> itemsToLoot.contains(item.getItem().getName())).collect(Collectors.toList());
-//        for (var item : itemsToPickup) {
-//            Rs2GroundItem.interact(item);
-//            sleepUntil(() -> Rs2Inventory.waitForInventoryChanges(600));
-//            CompletableFuture.runAsync(() -> UpdateTotalLoot(item));
-//        }
     }
 
     private boolean lootItem(String itemName) {
@@ -780,18 +774,7 @@ public class DemonicGorillaScript extends Script {
         return false;
     }
 
-    private void lootAndScatterMalicious() {
-        String ashesName = "Malicious ashes";
 
-        if (!Rs2Inventory.isFull() && Rs2GroundItem.lootItemsBasedOnNames(new LootingParameters(10, 1, 1, 0, false, true, ashesName))) {
-            sleepUntil(() -> Rs2Inventory.contains(ashesName), 2000);
-
-            if (Rs2Inventory.contains(ashesName)) {
-                Rs2Inventory.interact(ashesName, "Scatter");
-                sleep(600); // Wait briefly for scattering action
-            }
-        }
-    }
 
     private void evaluateAndConsumePotions(DemonicGorillaConfig config) {
         int threshold = config.boostedStatsThreshold();
