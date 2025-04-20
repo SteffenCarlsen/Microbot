@@ -123,10 +123,10 @@ public class DemonicGorillaPlugin extends Plugin {
         var dist = projectile.getTarget().distanceTo(Microbot.getClient().getLocalPlayer().getLocalLocation());
         var dist2 = Rs2Player.getLocalLocation().distanceTo(projectile.getTarget());
 
-        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
-            demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
-            demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
-        }
+//        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
+//            demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
+//            demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
+//        }
         if (projectile.getId() == DEMONIC_GORILLA_ROCK && event.getPosition().equals(Rs2Player.getLocalLocation())) {
             demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
             demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();

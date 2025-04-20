@@ -306,7 +306,7 @@ public class DemonicGorillaScript extends Script {
         if (!lootAttempted) {
             Rs2Player.eatAt(80);
             Rs2Player.drinkPrayerPotionAt(config.minEatPercent());
-            //attemptLooting(config);
+            attemptLooting(config);
             lootAttempted = true;
             if (currentTarget != null && currentTarget.isDead()) {
                 killCount++;
@@ -744,19 +744,30 @@ public class DemonicGorillaScript extends Script {
 
     private void attemptLooting(DemonicGorillaConfig config) {
         Microbot.log("Checking loot..");
-        if (currentTarget != null && currentTarget.isDead()) {
-            sleep(600,1200);
-        }
         Loot(config);
+        if (config.scatterAshes()) {
+            lootAndScatterMalicious();
+        }
+    }
+
+    private void lootAndScatterMalicious() {
+        String ashesName = "Malicious ashes";
+
+        if (!Rs2Inventory.isFull() && Rs2GroundItem.lootItemsBasedOnNames(new LootingParameters(10, 1, 1, 0, false, true, ashesName))) {
+            sleepUntil(() -> Rs2Inventory.contains(ashesName), 2000);
+
+            if (Rs2Inventory.contains(ashesName)) {
+                Rs2Inventory.interact(ashesName, "Scatter");
+                sleep(600); // Wait briefly for scattering action
+            }
+        }
     }
 
     private void Loot(DemonicGorillaConfig config) {
+        sleep(1200, 1600);
         long startTime = System.currentTimeMillis();
-        var itemsToLoot = parseGear(config.lootItems());
-        for (var item : itemsToLoot) {
-            var lootedItem = lootItem(item);
-            var looted2 = Rs2GroundItem.lootAtGePrice(10000);
-        }
+        LootingParameters params = new LootingParameters(10, 1, 1, 0, false, true, config.lootItems().trim().split(","));
+        Rs2GroundItem.lootItemsBasedOnNames(params);
         long endTime = System.currentTimeMillis();
         long duration = endTime - startTime;
         Microbot.log("Looting method took " + duration + " milliseconds");
