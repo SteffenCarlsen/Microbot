@@ -45,12 +45,14 @@ public class RoyalTitansOverlay extends OverlayPanel {
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Kills: " + plugin.royalTitansScript.kills)
                     .build());
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Enrage tile: " + plugin.royalTitansScript.enrageTile.getWorldLocation())
-                    .build());
+            if (plugin.royalTitansScript.enrageTile != null) {
+                panelComponent.getChildren().add(LineComponent.builder()
+                        .left("Enrage tile: " + plugin.royalTitansScript.enrageTile.getWorldLocation())
+                        .build());
+            }
 
 
-        } catch(Exception ex) {
+        } catch (Exception ex) {
             System.out.println(ex.getMessage());
         }
         return super.render(graphics);

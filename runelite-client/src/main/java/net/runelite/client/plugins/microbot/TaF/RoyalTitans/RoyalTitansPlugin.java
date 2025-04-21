@@ -5,7 +5,9 @@ import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GraphicsObject;
 import net.runelite.api.GroundObject;
 import net.runelite.api.Tile;
-import net.runelite.api.events.*;
+import net.runelite.api.events.GraphicsObjectCreated;
+import net.runelite.api.events.GroundObjectDespawned;
+import net.runelite.api.events.GroundObjectSpawned;
 import net.runelite.client.config.ConfigManager;
 import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
@@ -32,25 +34,26 @@ import java.util.concurrent.TimeUnit;
 )
 @Slf4j
 public class RoyalTitansPlugin extends Plugin {
-    private final Integer GRAPHICS_OBJECT_FIRE =  3218;
-    private final Integer GRAPHICS_OBJECT_ICE =  3221;
-    private final Integer ENRAGE_ELEMENTAL_BLAST_SAFESPOT =  56003;
+    private final Integer GRAPHICS_OBJECT_FIRE = 3218;
+    private final Integer GRAPHICS_OBJECT_ICE = 3221;
+    private final Integer ENRAGE_ELEMENTAL_BLAST_SAFESPOT = 56003;
+    private final RoyalTitansLooterScript royalTitansLooterScript = new RoyalTitansLooterScript();
+    @Inject
+    public RoyalTitansScript royalTitansScript;
     private ScheduledExecutorService scheduledExecutorService;
     @Inject
     private RoyalTitansConfig config;
+    @Inject
+    private OverlayManager overlayManager;
+    @Inject
+    private RoyalTitansOverlay royalTitansOverlay;
+    private Instant scriptStartTime;
 
     @Provides
     RoyalTitansConfig provideConfig(ConfigManager configManager) {
         return configManager.getConfig(RoyalTitansConfig.class);
     }
 
-    @Inject
-    private OverlayManager overlayManager;
-    @Inject
-    private RoyalTitansOverlay royalTitansOverlay;
-    @Inject
-    public RoyalTitansScript royalTitansScript;
-    private Instant scriptStartTime;
     @Override
     protected void startUp() throws AWTException {
         scriptStartTime = Instant.now();
@@ -59,12 +62,14 @@ public class RoyalTitansPlugin extends Plugin {
             overlayManager.add(royalTitansOverlay);
         }
         royalTitansScript.run(config);
+        royalTitansLooterScript.run(config, royalTitansScript);
         Rs2Tile.init();
     }
 
     @Override
     protected void shutDown() {
         royalTitansScript.shutdown();
+        royalTitansLooterScript.shutdown();
         scriptStartTime = null;
         overlayManager.remove(royalTitansOverlay);
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
@@ -77,8 +82,7 @@ public class RoyalTitansPlugin extends Plugin {
     }
 
     @Subscribe
-    public void onGraphicsObjectCreated(GraphicsObjectCreated event)
-    {
+    public void onGraphicsObjectCreated(GraphicsObjectCreated event) {
         final GraphicsObject graphicsObject = event.getGraphicsObject();
         if (graphicsObject.getId() == GRAPHICS_OBJECT_ICE || graphicsObject.getId() == GRAPHICS_OBJECT_FIRE) {
             Rs2Tile.addDangerousGraphicsObjectTile(graphicsObject, 600 * 3);

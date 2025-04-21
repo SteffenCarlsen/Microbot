@@ -55,6 +55,7 @@ public interface RoyalTitansConfig extends Config {
     default String teammateName() {
         return "";
     }
+
     @ConfigItem(
             keyName = "resupplyWithTeammate",
             name = "Leave with teammate",
@@ -76,6 +77,7 @@ public interface RoyalTitansConfig extends Config {
     default boolean currentBotInstanceOwner() {
         return false;
     }
+
     @ConfigItem(
             keyName = "waitingTimeForTeammate",
             name = "The amount of time (in seconds) to wait for your teammate at the entrance",
@@ -86,6 +88,7 @@ public interface RoyalTitansConfig extends Config {
     default int waitingTimeForTeammate() {
         return 600;
     }
+
     @Range(
             min = 120,
             max = 900
@@ -101,6 +104,7 @@ public interface RoyalTitansConfig extends Config {
     default boolean useSpecialAttacks() {
         return false;
     }
+
     @ConfigItem(
             keyName = "specialAttackWeapon",
             name = "Special attack gear",
@@ -211,6 +215,7 @@ public interface RoyalTitansConfig extends Config {
     default InventorySetup meleeEquipment() {
         return null;
     }
+
     @ConfigItem(
             keyName = "rangedEquipment",
             name = "Range equipment",
@@ -244,6 +249,7 @@ public interface RoyalTitansConfig extends Config {
     default InventorySetup inventorySetup() {
         return null;
     }
+
     @ConfigItem(
             keyName = "emergencyTeleport",
             name = "Emergency teleport item ID",
@@ -283,8 +289,11 @@ public interface RoyalTitansConfig extends Config {
     }
 
     // Enums
-    public enum SpecialAttackWeaponStyle { RANGED, MELEE }
-    public enum RoyalTitan { ICE_TITAN, FIRE_TITAN }
-    public enum Minions { ICE_MINIONS, FIRE_MINIONS}
-    public enum LootingTitan { ICE_TITAN, FIRE_TITAN, ALTERNATE, RANDOM }
+    enum SpecialAttackWeaponStyle {RANGED, MELEE}
+
+    enum RoyalTitan {ICE_TITAN, FIRE_TITAN}
+
+    enum Minions {ICE_MINIONS, FIRE_MINIONS}
+
+    enum LootingTitan {ICE_TITAN, FIRE_TITAN, ALTERNATE, RANDOM}
 }
