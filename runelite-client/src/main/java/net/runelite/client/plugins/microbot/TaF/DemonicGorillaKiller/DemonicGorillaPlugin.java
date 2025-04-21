@@ -15,6 +15,7 @@ import net.runelite.client.events.ConfigChanged;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.microbot.Microbot;
+import net.runelite.client.plugins.microbot.aiofighter.loot.LootScript;
 import net.runelite.client.plugins.microbot.util.containers.FixedSizeQueue;
 import net.runelite.client.plugins.microbot.util.misc.TimeUtils;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
@@ -52,6 +53,8 @@ public class DemonicGorillaPlugin extends Plugin {
     private DemonicGorillaScript demonicGorillaScript;
     private Instant scriptStartTime;
 
+    private final DemonicGorillaLooterScript lootScript = new DemonicGorillaLooterScript();
+
     @Provides
     DemonicGorillaConfig provideConfig(ConfigManager configManager) {
         return configManager.getConfig(DemonicGorillaConfig.class);
@@ -64,11 +67,13 @@ public class DemonicGorillaPlugin extends Plugin {
             overlayManager.add(demonicGorillaOverlay);
         }
         demonicGorillaScript.run(config);
+        lootScript.run(config);
     }
 
     @Override
     protected void shutDown() {
         demonicGorillaScript.shutdown();
+        lootScript.shutdown();
         overlayManager.remove(demonicGorillaOverlay);
         if (scheduledExecutorService != null && !scheduledExecutorService.isShutdown()) {
             scheduledExecutorService.shutdown();
@@ -118,9 +123,14 @@ public class DemonicGorillaPlugin extends Plugin {
         var dist = projectile.getTarget().distanceTo(Microbot.getClient().getLocalPlayer().getLocalLocation());
         var dist2 = Rs2Player.getLocalLocation().distanceTo(projectile.getTarget());
 
-        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
+//        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
+//            demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
+//            demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
+//        }
+        if (projectile.getId() == DEMONIC_GORILLA_ROCK && event.getPosition().equals(Rs2Player.getLocalLocation())) {
             demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
             demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
+            Microbot.log("My rock");
         }
     }
 
