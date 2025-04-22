@@ -42,8 +42,6 @@ public class DemonicGorillaPlugin extends Plugin {
     public static FixedSizeQueue<WorldPoint> lastLocation = new FixedSizeQueue<>(2);
     private ScheduledExecutorService scheduledExecutorService;
     @Inject
-    private ConfigManager configManager;
-    @Inject
     private DemonicGorillaConfig config;
     @Inject
     private OverlayManager overlayManager;
@@ -85,52 +83,11 @@ public class DemonicGorillaPlugin extends Plugin {
     }
 
     @Subscribe
-    private void onConfigChanged(ConfigChanged event) {
-        if (!event.getGroup().equals("DemonicGorilla")) {
-            return;
-        }
-
-        if (event.getKey().equals("copyGear")) {
-            Microbot.getClientThread().invoke(() -> {
-                try {
-                    StringJoiner gearList = new StringJoiner(",");
-                    for (Item item : Microbot.getClient().getItemContainer(InventoryID.EQUIPMENT).getItems()) {
-                        if (item != null && item.getId() != -1 && item.getId() != 6512) {
-                            ItemComposition itemComposition = Microbot.getClient().getItemDefinition(item.getId());
-                            gearList.add(itemComposition.getName());
-                        }
-                    }
-
-                    String gearString = gearList.toString();
-                    if (gearString.isEmpty()) {
-                        Microbot.log("No gear found to copy.");
-                        return;
-                    }
-
-                    StringSelection selection = new StringSelection(gearString);
-                    Toolkit.getDefaultToolkit().getSystemClipboard().setContents(selection, selection);
-                    Microbot.log("Current gear copied to clipboard: " + gearString);
-                } catch (Exception e) {
-                    Microbot.log("Failed to copy gear to clipboard: " + e.getMessage());
-                }
-            });
-        }
-    }
-
-    @Subscribe
     public void onProjectileMoved(ProjectileMoved event) {
         final Projectile projectile = event.getProjectile();
-        var dist = projectile.getTarget().distanceTo(Microbot.getClient().getLocalPlayer().getLocalLocation());
-        var dist2 = Rs2Player.getLocalLocation().distanceTo(projectile.getTarget());
-
-//        if (projectile.getId() == DEMONIC_GORILLA_ROCK && (dist < 9000 || dist2 < 9000)) {
-//            demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
-//            demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
-//        }
         if (projectile.getId() == DEMONIC_GORILLA_ROCK && event.getPosition().equals(Rs2Player.getLocalLocation())) {
             demonicGorillaScript.demonicGorillaRockPosition = event.getPosition();
             demonicGorillaScript.demonicGorillaRockLifeCycle = projectile.getEndCycle();
-            Microbot.log("My rock");
         }
     }
 
