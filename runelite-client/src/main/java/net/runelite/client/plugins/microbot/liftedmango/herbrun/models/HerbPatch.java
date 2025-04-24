@@ -1,4 +1,4 @@
-﻿package net.runelite.client.plugins.microbot.liftedmango.herbrun.models;
+package net.runelite.client.plugins.microbot.liftedmango.herbrun.models;
 
 import net.runelite.api.ItemID;
 import net.runelite.api.coords.WorldPoint;

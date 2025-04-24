@@ -1,4 +1,4 @@
-﻿package net.runelite.client.plugins.microbot.liftedmango.herbrun.models;
+package net.runelite.client.plugins.microbot.liftedmango.herbrun.models;
 
 public enum TransportType {
     Item,
