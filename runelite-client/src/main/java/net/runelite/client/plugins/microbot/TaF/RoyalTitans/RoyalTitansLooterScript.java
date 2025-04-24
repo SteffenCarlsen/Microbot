@@ -4,7 +4,6 @@ import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.Script;
 import net.runelite.client.plugins.microbot.util.grounditem.LootingParameters;
 import net.runelite.client.plugins.microbot.util.grounditem.Rs2GroundItem;
-import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
 
@@ -16,7 +15,7 @@ import static net.runelite.client.plugins.microbot.TaF.RoyalTitans.RoyalTitansSh
 public class RoyalTitansLooterScript extends Script {
     @Inject
     public RoyalTitansScript royalTitansScript;
-    public String itemsToLoot = "Zenyte shard,Ballista spring,Ballista limbs,Ballista frame,Monkey tail,Heavy frame,Light frame,Rune platelegs,Rune plateskirt,Rune chainbody,Dragon scimitar,Law rune,Death rune,Runite bolts,Grimy kwuarm,Grimy cadantine,Grimy dwarf weed,Grimy lantadyme,Ranarr seed,Snapdragon seed,Torstol seed,Yew seed,Magic seed,Palm tree seed,Spirit seed,Dragonfruit tree seed,Celastrus seed,Redwood tree seed,Prayer potion(3),Shark,Coins,Saradomin brew(2),Rune javelin heads,Dragon javelin heads,Adamantite bar,Diamond,Runite bar";
+    public String itemsToLoot = "Giantsoul amulet,Fire element staff crown,Mystic vigour prayer scroll,Mystic fire staff,Fire battlestaff,Rune plateskirt,Rune scimitar,Rune pickaxe,Chaos rune,Death rune,Nature rune,Law rune,Soul rune,Blood rune,Rune arrow,Fire rune,Gold ore,Fire orb,Coal,Grimy avantoe,Grimy cadantine,Grimy dwarf weed,Grimy irit leaf,Grimy kwuarm,Grimy lantadyme,Grimy ranarr weed,Maple seed,Palm tree seed,Yew seed,Coins,Desiccated page,Prayer potion(4),Clue scroll (hard),Clue scroll (elite)";
     int minFreeSlots = 0;
     private RoyalTitansConfig.RoyalTitan LootedTitan = null;
 
@@ -32,7 +31,6 @@ public class RoyalTitansLooterScript extends Script {
                 if (!Microbot.isLoggedIn()) return;
                 if (royalTitansScript.state.equals(BotStatus.BANKING) || royalTitansScript.state.equals(BotStatus.TRAVELLING) || royalTitansScript.state.equals(BotStatus.WAITING))
                     return;
-                if (Rs2Inventory.isFull() || Rs2Inventory.getEmptySlots() <= minFreeSlots) return;
                 if (!isInBossRegion()) return;
                 var iceTitanDead = Rs2Npc.getNpcs(ICE_TITAN_DEAD_ID).findFirst().orElse(null);
                 var fireTitanDead = Rs2Npc.getNpcs(FIRE_TITAN_DEAD_ID).findFirst().orElse(null);

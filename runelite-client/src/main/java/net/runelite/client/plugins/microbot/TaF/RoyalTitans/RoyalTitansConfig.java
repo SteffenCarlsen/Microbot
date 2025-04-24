@@ -4,10 +4,12 @@ import net.runelite.client.config.*;
 import net.runelite.client.plugins.microbot.inventorysetups.InventorySetup;
 
 @ConfigInformation(
-        "This plugin kills Royal Titans together with another bot"
+        "This plugin kills Royal Titans together with another bot or human player that follows the setup guidelines. You must have the other account on your friendlist and be appearing online"
                 + "Select an equipment config with all 3 combat styles"
                 + "<br/>"
-                + "TODO"
+                + "Melee setup: Used whenever the Titan is in melee range"
+                + "Range setup: Used whenever the titan is out of range"
+                + "Magic setup: Used to handle specials"
                 + "<br/>"
                 + "</html>")
 @ConfigGroup("RoyalTitans")

@@ -239,7 +239,7 @@ public class RoyalTitansScript extends Script {
         var iceTitan = Rs2Npc.getNpcs(ICE_TITAN_ID).findFirst().orElse(null);
         var fireTitan = Rs2Npc.getNpcs(FIRE_TITAN_ID).findFirst().orElse(null);
         if (iceTitan == null && fireTitan == null) {
-            Microbot.log("No titans found");
+            subState = "Waiting for Titans to respawn";
             return;
         }
         LootedTitanLastIteration = false;
@@ -258,7 +258,7 @@ public class RoyalTitansScript extends Script {
         if (Rs2Inventory.isFull()) {
             return;
         }
-        if (enrageTile == null) {
+        if (enrageTile != null) {
             return;
         }
 
@@ -287,16 +287,6 @@ public class RoyalTitansScript extends Script {
             } else {
                 Rs2Walker.walkFastCanvas(enrageTile.getWorldLocation());
                 equipArmor(rangedInventorySetup);
-            }
-
-            if (fireTitan != null && !fireTitan.isDead()) {
-                Rs2Npc.attack(fireTitan);
-                handleSpecialAttacks(config, fireTitan);
-                return;
-            } else if (iceTitan != null) {
-                Rs2Npc.attack(iceTitan);
-                handleSpecialAttacks(config, iceTitan);
-                return;
             }
         }
         // Both bosses alive - Handle focus
@@ -363,7 +353,15 @@ public class RoyalTitansScript extends Script {
         if (walls.isEmpty()) {
             return false;
         }
-        if (walls.size() < 8) {
+        var iceTitan = Rs2Npc.getNpcs(ICE_TITAN_ID).findFirst().orElse(null);
+        var fireTitan = Rs2Npc.getNpcs(FIRE_TITAN_ID).findFirst().orElse(null);
+
+        if (walls.size() < 8 &&
+                !(iceTitan!= null && iceTitan.getWorldLocation().getRegionX() == MELEE_TITAN_ICE_REGION_X ||
+                        (iceTitan.getWorldLocation().getRegionX() > MELEE_TITAN_FIRE_REGION_X && iceTitan.getWorldLocation().getRegionX() < MELEE_TITAN_ICE_REGION_X) ||
+                 (fireTitan != null && fireTitan.getWorldLocation().getRegionX() == MELEE_TITAN_FIRE_REGION_X ||
+                         (fireTitan.getWorldLocation().getRegionX() > MELEE_TITAN_FIRE_REGION_X && fireTitan.getWorldLocation().getRegionX() < MELEE_TITAN_ICE_REGION_X))))
+        {
             return false;
         }
         equipArmor(magicInventorySetup);
