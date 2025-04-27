@@ -26,10 +26,8 @@ import net.runelite.client.plugins.microbot.util.tile.Rs2Tile;
 import net.runelite.client.plugins.microbot.util.walker.Rs2Walker;
 import org.apache.commons.lang3.tuple.Pair;
 
-import java.awt.*;
 import java.time.Instant;
 import java.util.*;
-import java.util.List;
 import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
@@ -213,13 +211,8 @@ public class DemonicGorillaScript extends Script {
             case LOAD_INVENTORY:
                 Microbot.status = "Loading inventory and equipment setup...";
                 boolean equipmentLoaded = inventorySetup.loadEquipment();
-                if (!equipmentLoaded) {
-                    Microbot.log("Failed to load equipment setup");
-                }
                 boolean inventoryLoaded = inventorySetup.loadInventory();
-                if (!inventoryLoaded) {
-                    Microbot.log("Failed to load inventory setup");
-                }
+
                 if (equipmentLoaded && inventoryLoaded) {
                     var ate = false;
                     boolean ateFood = false;
@@ -551,10 +544,8 @@ public class DemonicGorillaScript extends Script {
         }
         var interacting = Rs2Player.getInteracting();
         if (interacting != null) {
-            if (interacting.getName() != null) {
-                if (interacting.getName().equals("Demonic gorilla")) {
-                    return (Rs2NpcModel) interacting;
-                }
+            if (Objects.equals(interacting.getName(), "Demonic gorilla")) {
+                return (Rs2NpcModel) interacting;
             }
         }
         var playerLocation = Microbot.getClient().getLocalPlayer().getWorldLocation();
