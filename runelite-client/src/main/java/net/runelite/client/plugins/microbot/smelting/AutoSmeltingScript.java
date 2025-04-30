@@ -64,28 +64,38 @@ public class AutoSmeltingScript extends Script {
 
                 // walk to the initial position (near furnace)
                 if (initialPlayerLocation.distanceTo(Rs2Player.getWorldLocation()) > 4) {
-                    if (Rs2Bank.isOpen())
+                    if (Rs2Bank.isOpen()) {
                         Rs2Bank.closeBank();
-                    Rs2Walker.walkTo(initialPlayerLocation, 4);
+                    }
+                    GameObject furnace = Rs2GameObject.findObject("furnace", true, 10, true, initialPlayerLocation);
+                    if (furnace != null) {
+                        InteractWithFurnace(config);
+                    } else {
+                        Rs2Walker.walkTo(initialPlayerLocation, 4);
+                    }
                     return;
                 }
 
                 // interact with the furnace until the smelting dialogue opens in chat, click the selected bar icon
-                GameObject furnace = Rs2GameObject.findObject("furnace", true, 10, false, initialPlayerLocation);
-                if (furnace != null) {
-                    Rs2GameObject.interact(furnace, "smelt");
-                    Rs2Widget.sleepUntilHasWidgetText("What would you like to smelt?", 270, 5, false, 5000);
-                    Rs2Widget.clickWidget(config.SELECTED_BAR_TYPE().getName());
-                    Rs2Widget.sleepUntilHasNotWidgetText("What would you like to smelt?", 270, 5, false, 5000);
-                    Rs2Antiban.actionCooldown();
-                    Rs2Antiban.takeMicroBreakByChance();
-                }
+                InteractWithFurnace(config);
 
             } catch (Exception ex) {
                 System.out.println(ex.getMessage());
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
         return true;
+    }
+
+    private static void InteractWithFurnace(AutoSmeltingConfig config) {
+        GameObject furnace = Rs2GameObject.findObject("furnace", true, 10, false, initialPlayerLocation);
+        if (furnace != null) {
+            Rs2GameObject.interact(furnace, "smelt");
+            Rs2Widget.sleepUntilHasWidgetText("What would you like to smelt?", 270, 5, false, 5000);
+            Rs2Widget.clickWidget(config.SELECTED_BAR_TYPE().getName());
+            Rs2Widget.sleepUntilHasNotWidgetText("What would you like to smelt?", 270, 5, false, 5000);
+            Rs2Antiban.actionCooldown();
+            Rs2Antiban.takeMicroBreakByChance();
+        }
     }
 
     @Override

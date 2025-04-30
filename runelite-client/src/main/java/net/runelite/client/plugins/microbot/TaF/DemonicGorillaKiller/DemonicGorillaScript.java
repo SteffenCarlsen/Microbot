@@ -112,6 +112,10 @@ public class DemonicGorillaScript extends Script {
         mainScheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
                 if (!Microbot.isLoggedIn() || !super.run()) return;
+                if (Thread.currentThread().isInterrupted()) {
+                    Microbot.log("Thread interrupted in DemonicGorillaScript");
+                    return;
+                }
                 rangeGear = new Rs2InventorySetup(config.rangeGear(), mainScheduledFuture);
                 magicGear = new Rs2InventorySetup(config.magicGear(), mainScheduledFuture);
                 meleeGear = new Rs2InventorySetup(config.meleeGear(), mainScheduledFuture);
@@ -127,6 +131,10 @@ public class DemonicGorillaScript extends Script {
                         break;
                 }
             } catch (Exception ex) {
+                if (ex instanceof InterruptedException) {
+                    Microbot.log("Interrupted in scheduled task");
+                    return;
+                }
                 logOnceToChat("Error in main loop: " + ex.getMessage());
                 System.out.println("Exception message: " + ex.getMessage());
                 ex.printStackTrace();
@@ -550,7 +558,7 @@ public class DemonicGorillaScript extends Script {
         }
         var playerLocation = Microbot.getClient().getLocalPlayer().getWorldLocation();
 
-        var alreadyInteractingNpcs = Rs2Npc.getNpcsForPlayer("Demonic gorilla");
+        var alreadyInteractingNpcs = Rs2Npc.getNpcsForPlayer("Demonic gorilla", true);
         if (!alreadyInteractingNpcs.isEmpty()) {
             return alreadyInteractingNpcs.stream()
                     .min(Comparator.comparingInt(npc -> npc.getWorldLocation().distanceTo(playerLocation))).get();
@@ -748,6 +756,21 @@ public class DemonicGorillaScript extends Script {
 
     @Override
     public void shutdown() {
+        isRunning = false;
+        // Cancel with interrupt=false to avoid creating more interruption issues
+        if (mainScheduledFuture != null && !mainScheduledFuture.isCancelled()) {
+            mainScheduledFuture.cancel(false);
+        }
+
+        // Shutdown executor service properly with timeout
+        try {
+            scheduledExecutorService.shutdown();
+            if (!scheduledExecutorService.awaitTermination(2, TimeUnit.SECONDS)) {
+                scheduledExecutorService.shutdownNow();
+            }
+        } catch (InterruptedException e) {
+            scheduledExecutorService.shutdownNow();
+        }
         super.shutdown();
         BOT_STATUS = State.BANKING;
         isRunning = false;
