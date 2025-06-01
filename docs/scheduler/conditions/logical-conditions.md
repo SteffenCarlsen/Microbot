@@ -59,13 +59,13 @@ NotCondition condition = new NotCondition(
 ```
 
 **Key features:**
-- Inverts the satisfaction state of the wrapped condition
+- Inverts the satisfaction moonsState of the wrapped condition
 - Progress percentage is inverted (100 - child progress)
 - Useful for creating negative conditions like "not in an area" or "no items in inventory"
 
 ### LockCondition
 
-The `LockCondition` is a special logical condition that remains satisfied once it becomes satisfied, regardless of the subsequent state of its child condition.
+The `LockCondition` is a special logical condition that remains satisfied once it becomes satisfied, regardless of the subsequent moonsState of its child condition.
 
 **Usage:**
 ```java

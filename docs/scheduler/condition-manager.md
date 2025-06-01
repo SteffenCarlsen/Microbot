@@ -159,7 +159,7 @@ The `ConditionManager` includes a sophisticated watchdog system that periodicall
 ```java
 /**
  * Schedules a periodic task to update conditions from the given supplier.
- * This allows plugins to dynamically update their conditions based on changing game state.
+ * This allows plugins to dynamically update their conditions based on changing game moonsState.
  */
 public ScheduledFuture<?> scheduleConditionWatchdog(
     Supplier<LogicalCondition> conditionSupplier,
@@ -198,7 +198,7 @@ public ScheduledFuture<?> scheduleConditionWatchdog(
 }
 ```
 
-This watchdog system enables plugins to dynamically update their conditions based on changing game state, supporting more sophisticated automation patterns.
+This watchdog system enables plugins to dynamically update their conditions based on changing game moonsState, supporting more sophisticated automation patterns.
 
 ### Condition Update Options
 
@@ -250,7 +250,7 @@ The `ConditionManager` integrates with RuneLite's event system to update conditi
 ```java
 /**
  * Registers event listeners with the RuneLite event bus to receive relevant game events.
- * This enables conditions to update based on game state changes.
+ * This enables conditions to update based on game moonsState changes.
  */
 public void registerEvents() {
     if (!eventsRegistered) {
@@ -276,14 +276,14 @@ public void unregisterEvents() {
  */
 @Subscribe
 public void onGameTick(GameTick event) {
-    // Update all conditions with the latest game state
+    // Update all conditions with the latest game moonsState
     for (Condition condition : getConditions()) {
         condition.update();
     }
 }
 ```
 
-This event integration ensures conditions are kept up-to-date with the current game state.
+This event integration ensures conditions are kept up-to-date with the current game moonsState.
 
 ### Time Condition Management
 
@@ -421,4 +421,4 @@ When working with `ConditionManager`:
 
 ## Summary
 
-The `ConditionManager` class is the sophisticated "brain" behind the Plugin Scheduler's condition evaluation system. By maintaining separate hierarchies for user and plugin conditions, it creates a powerful but flexible framework for defining when plugins should start and stop. Its integration with the RuneLite event system, watchdog capabilities, and hierarchical logical structure enable complex automation patterns that can adapt to the changing game state.
+The `ConditionManager` class is the sophisticated "brain" behind the Plugin Scheduler's condition evaluation system. By maintaining separate hierarchies for user and plugin conditions, it creates a powerful but flexible framework for defining when plugins should start and stop. Its integration with the RuneLite event system, watchdog capabilities, and hierarchical logical structure enable complex automation patterns that can adapt to the changing game moonsState.

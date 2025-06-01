@@ -61,7 +61,7 @@ The `Rs2Keyboard` class simulates keyboard actions such as typing strings, press
 
 ### `pressedKeys`
 - **Type**: `Map<Integer, Boolean>`
-- **Description**: Keeps track of the pressed state of keys.
+- **Description**: Keeps track of the pressed moonsState of keys.
 
 ## Usage Example
 ```java

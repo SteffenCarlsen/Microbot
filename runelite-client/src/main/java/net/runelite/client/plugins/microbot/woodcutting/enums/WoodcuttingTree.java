@@ -12,7 +12,7 @@ public enum WoodcuttingTree {
     TREE("tree" , "Logs", ItemID.LOGS, 1, "Chop down"),
     OAK("oak tree", "Oak logs", ItemID.OAK_LOGS,15, "Chop down"),
     WILLOW("willow tree", "Willow logs", ItemID.WILLOW_LOGS, 30, "Chop down"),
-    TEAK_TREE("teak tree", "Teak logs", ItemID.TEAK_LOGS, 35, "Chop down"),
+    TEAK_TREE("Teak tree", "Teak logs", ItemID.TEAK_LOGS, 35, "Chop down"),
     MAPLE("maple tree", "Maple logs", ItemID.MAPLE_LOGS, 45, "Chop down"),
     MAHOGANY("mahogany tree", "Mahogany logs", ItemID.MAHOGANY_LOGS, 50, "Chop down"),
     YEW("yew tree", "Yew logs", ItemID.YEW_LOGS, 60, "Chop down"),

@@ -7,7 +7,7 @@ The `Rs2GameObject` class provides methods to interact with game objects within 
 
 ### `clickObject`
 - **Signature**: `private static boolean clickObject(TileObject object, String action)`
-- **Description**: Handles the clicking of a game object, applying a specified action. This method includes detailed logic for handling the action based on the object's properties and current game state.
+- **Description**: Handles the clicking of a game object, applying a specified action. This method includes detailed logic for handling the action based on the object's properties and current game moonsState.
 
 ### `convertGameObjectToObjectComposition`
 - **Signature**: `public static ObjectComposition convertGameObjectToObjectComposition(TileObject tileObject)`

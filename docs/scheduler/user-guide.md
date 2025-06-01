@@ -348,7 +348,7 @@ This creates a progression plan where the scheduler automatically moves from one
 
 > **Note**: The examples and scenarios provided in this guide are illustrative only. Not all plugins mentioned in these examples may be schedulable at this time. Please check the Scheduler GUI to see which plugins are currently available for scheduling.
 
-> **Feedback Welcome**: The Plugin Scheduler and all its features are currently in an experimental state. User feedback is greatly appreciated to help improve functionality and documentation.
+> **Feedback Welcome**: The Plugin Scheduler and all its features are currently in an experimental moonsState. User feedback is greatly appreciated to help improve functionality and documentation.
 
 ## Conclusion
 

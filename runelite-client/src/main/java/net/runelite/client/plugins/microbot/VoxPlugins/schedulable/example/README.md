@@ -1,7 +1,7 @@
 # SchedulableExamplePlugin Documentation
 
 ## Overview
-The `SchedulableExamplePlugin` demonstrates how to create a plugin compatible with Microbot's scheduler system. It implements the `ConditionProvider` interface to define configurable conditions for when the plugin should automatically start and stop based on various in-game criteria. This plugin serves as a comprehensive example for developers wanting to create scripts that can be managed by the scheduler framework, providing a template for implementing different types of conditions and state management approaches.
+The `SchedulableExamplePlugin` demonstrates how to create a plugin compatible with Microbot's scheduler system. It implements the `ConditionProvider` interface to define configurable conditions for when the plugin should automatically start and stop based on various in-game criteria. This plugin serves as a comprehensive example for developers wanting to create scripts that can be managed by the scheduler framework, providing a template for implementing different types of conditions and moonsState management approaches.
 
 The plugin provides a practical implementation of conditional logic that can be used to automate tasks in a controlled manner. By integrating with the scheduler, it enables users to create complex automation workflows where multiple plugins can work together in a sequenced manner, each starting and stopping based on specific game conditions.
 
@@ -27,16 +27,16 @@ The plugin consists of four primary components that work together to provide a c
    - Handles hotkey inputs for custom area marking
    - Serves as the central orchestrator that connects configuration, script execution, and condition evaluation
    - Implements the scheduler integration points through the `ConditionProvider` methods
-   - Maintains state between sessions by saving and loading world locations
+   - Maintains moonsState between sessions by saving and loading world locations
 
 2. **SchedulableExampleConfig** (`SchedulableExampleConfig.java`)
    - Configuration interface with `@ConfigGroup` and `@ConfigItem` annotations
    - Defines all configurable parameters for the plugin
    - Organizes settings into logical sections using `@ConfigSection` annotations
    - Provides default values for configuration options
-   - Includes setter methods for mutable state (like custom area coordinates)
+   - Includes setter methods for mutable moonsState (like custom area coordinates)
    - Uses enums to define valid option sets (like `LocationStartType` and `ProcessTrackingMode`)
-   - Implements hidden configuration items for internal state persistence
+   - Implements hidden configuration items for internal moonsState persistence
    - Creates a hierarchical organization of settings with sections that can be collapsed by default
 
 3. **LocationStartNotificationOverlay** (`LocationStartNotificationOverlay.java`)
@@ -401,11 +401,11 @@ maxItems: 200
 1. **Thread Safety**
    - The plugin uses `Microbot.getClientThread().invokeLater()` to ensure operations run on the client thread
    - This is critical for preventing race conditions and ensuring proper interaction with the game client
-   - All UI updates and game state modifications should be performed on the client thread
+   - All UI updates and game moonsState modifications should be performed on the client thread
 
 2. **State Persistence**
-   - Configuration state is saved between sessions using RuneLite's ConfigManager
-   - The plugin maintains state across sessions by saving:
+   - Configuration moonsState is saved between sessions using RuneLite's ConfigManager
+   - The plugin maintains moonsState across sessions by saving:
      - Last known player location
      - Custom area definitions
      - Configuration parameters
@@ -432,14 +432,14 @@ maxItems: 200
    - Each logical condition can contain any mix of primitive conditions or nested logical conditions
 
 6. **State Machine Pattern**
-   - The `SchedulableExampleScript` uses a state machine to manage its operation
+   - The `SchedulableExampleScript` uses a moonsState machine to manage its operation
    - Different states handle different aspects of the script's functionality
    - Transitions between states occur based on in-game conditions
    - This provides a clear, maintainable structure for complex bot logic
 
 7. **Event-Driven Architecture**
    - The plugin responds to events from the scheduler and game client
-   - Events trigger state changes and condition evaluations
+   - Events trigger moonsState changes and condition evaluations
    - This decouples the plugin's logic from the specific timing of game updates
 
 ## Extending the Plugin
@@ -450,7 +450,7 @@ To extend the plugin with new types of conditions:
 
 1. **Create a new condition class** implementing the `Condition` interface
    - Define the logic for when the condition is satisfied
-   - Implement the `reset()` method to reinitialize the condition's state
+   - Implement the `reset()` method to reinitialize the condition's moonsState
    - Consider extending existing base classes like `ResourceCondition` if appropriate
 
 2. **Add configuration options** to `SchedulableExampleConfig`
@@ -474,8 +474,8 @@ To extend the plugin with new types of conditions:
 
 To add entirely new functionality to the plugin:
 
-1. **Extend the script class** with new methods and state management
-   - Add new states to the state machine if needed
+1. **Extend the script class** with new methods and moonsState management
+   - Add new states to the moonsState machine if needed
    - Implement the logic for the new functionality
    - Update the main loop to handle the new states and operations
 

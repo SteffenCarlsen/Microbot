@@ -15,7 +15,7 @@ The panel consists of four main sections:
    - Skill: For conditions based on your character's skills and XP
    - Resource: For inventory, item collection, and processing conditions
    - Location: For position-based conditions in the game world
-   - Varbit: For game state variables and collection log entries
+   - Varbit: For game moonsState variables and collection log entries
 
 2. **Condition Type Selection**: Each category has several specific condition types
    - Shows only relevant condition types based on your selected category
@@ -154,7 +154,7 @@ This prevents your plugin from starting activities you don't have the levels for
 
 ### Resource Conditions
 
-Resource conditions are essential for inventory management and gathering activities. They let you create rules based on items, resources, and inventory state.
+Resource conditions are essential for inventory management and gathering activities. They let you create rules based on items, resources, and inventory moonsState.
 
 #### Available Resource Condition Types
 
@@ -163,7 +163,7 @@ Resource conditions are essential for inventory management and gathering activit
 | Item Collection | Tracks collected items over time | Stop after gathering 1000 feathers |
 | Process Items | Tracks items processed/created | Stop after smithing 500 cannonballs |
 | Gather Resources | Tracks gathered raw resources | Stop after mining 200 iron ore |
-| Inventory Item Count | Checks current inventory state | Start when inventory is empty, stop when full |
+| Inventory Item Count | Checks current inventory moonsState | Start when inventory is empty, stop when full |
 | Bank Item Count | Checks items in bank | Stop when bank has 10,000 vials |
 | Loot Item | Checks for specific drops | Keep killing until specific drop obtained |
 | Item Required | Checks for required items | Only start if you have antipoison |
@@ -315,7 +315,7 @@ For more complex hunting goals that involve multiple NPC types:
 
 ### Varbit Conditions
 
-Varbit conditions relate to game state variables and track internal game values, allowing you to create rules based on quests, minigames, collection logs, and other game state information.
+Varbit conditions relate to game moonsState variables and track internal game values, allowing you to create rules based on quests, minigames, collection logs, and other game moonsState information.
 
 #### Available Varbit Condition Types
 
@@ -323,11 +323,11 @@ Varbit conditions relate to game state variables and track internal game values,
 |----------------|-------------|----------|
 | Collection Log - Bosses | Based on boss collection log entries | "Stop after collecting all GWD items" |
 | Collection Log - Minigames | Based on minigame collection log entries | "Run until Tempoross log is complete" |
-| Custom Varbit | Track a specific varbit or varp ID | "Wait until quest state changes" |
+| Custom Varbit | Track a specific varbit or varp ID | "Wait until quest moonsState changes" |
 
 #### Advanced Varbit Features
 
-- **Relative or Absolute Values**: Compare against absolute values or relative changes from the starting state
+- **Relative or Absolute Values**: Compare against absolute values or relative changes from the starting moonsState
 - **Comparison Operators**: Use equals, not equals, greater than, less than, etc.
 - **Randomization**: Set min/max target ranges for more varied behavior
 
@@ -464,7 +464,7 @@ One-time conditions are excellent for progression-based automation. For example,
 
 ### Recurring Conditions
 
-Recurring conditions can trigger multiple times as their state changes between satisfied and unsatisfied.
+Recurring conditions can trigger multiple times as their moonsState changes between satisfied and unsatisfied.
 
 **Examples of recurring conditions:**
 
@@ -490,7 +490,7 @@ The condition panel provides visual feedback on condition status:
 
 - **Green checkmark (✓)**: Condition is currently satisfied
 - **Red X (✗)**: Condition is not currently satisfied
-- **Lightning bolt (⚡)**: Condition is currently relevant to the plugin's state
+- **Lightning bolt (⚡)**: Condition is currently relevant to the plugin's moonsState
 
 The condition tree visualizes the logical structure of your conditions, allowing you to see at a glance how they're organized.
 
@@ -522,8 +522,8 @@ The condition tree visualizes the logical structure of your conditions, allowing
 
 ### Issue: Condition status indicators don't match expectations
 
-- **Possible cause**: The condition parameters don't match the current game state
-- **Solution**: Verify the current game state and adjust the condition parameters
+- **Possible cause**: The condition parameters don't match the current game moonsState
+- **Solution**: Verify the current game moonsState and adjust the condition parameters
 
 ## Advanced Condition Techniques
 

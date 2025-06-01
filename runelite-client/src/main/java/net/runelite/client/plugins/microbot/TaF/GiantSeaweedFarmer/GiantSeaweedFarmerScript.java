@@ -86,6 +86,9 @@ public class GiantSeaweedFarmerScript extends Script {
             Microbot.log("We failed to get back to the surface");
             return;
         }
+        Rs2Bank.openBank();
+        Rs2Bank.depositAll();
+        Rs2Bank.depositEquipment();
         Microbot.log("We're back at the bank, stopping the script");
         shutdown();
     }
@@ -116,7 +119,6 @@ public class GiantSeaweedFarmerScript extends Script {
         Rs2Bank.withdrawX("seaweed spore", 2);
         Rs2Bank.withdrawAndEquip("Fishbowl helmet");
         Rs2Bank.withdrawAndEquip("Diving apparatus");
-        Rs2Bank.withdrawOne("secateurs"); // Loot is not affected by type of secateurs, so just take whatever
         Rs2Bank.withdrawOne("seed dibber");
         Rs2Bank.withdrawOne("rake");
         Rs2Bank.withdrawOne("spade");
@@ -140,13 +142,12 @@ public class GiantSeaweedFarmerScript extends Script {
         }
 
         Rs2Bank.closeBank();
-
+        sleep(1600);
         // Validate inventory and equipment
         boolean hasHelmet = Rs2Equipment.isWearing("Fishbowl helmet");
         boolean hasApparatus = Rs2Equipment.isWearing("Diving apparatus");
         boolean hasSpores = Rs2Inventory.contains("seaweed spore");
-        boolean hasTools = Rs2Inventory.contains("secateurs") &&
-                Rs2Inventory.contains("seed dibber") &&
+        boolean hasTools = Rs2Inventory.contains("seed dibber") &&
                 Rs2Inventory.contains("rake") &&
                 Rs2Inventory.contains("spade");
 
@@ -159,7 +160,6 @@ public class GiantSeaweedFarmerScript extends Script {
             if (!hasSpores) missingItems.append("Seaweed spores, ");
 
             if (!hasTools) {
-                if (!Rs2Inventory.contains("secateurs")) missingItems.append("Secateurs, ");
                 if (!Rs2Inventory.contains("seed dibber")) missingItems.append("Seed dibber, ");
                 if (!Rs2Inventory.contains("rake")) missingItems.append("Rake, ");
                 if (!Rs2Inventory.contains("spade")) missingItems.append("Spade, ");
@@ -216,6 +216,7 @@ public class GiantSeaweedFarmerScript extends Script {
         Integer[] ids = {
                 patchId
         };
+
         var obj = Rs2GameObject.findObject(ids);
         if (obj == null) return false;
         var state = getSeaweedPatchState(obj);
