@@ -860,6 +860,9 @@ public class RefactoredBarrowsScript extends Script {
             if (RP > 870) {
                 return;
             }
+            if (getAlreadyKilledBrothers().size() < 6 && RP > 70) {
+                return;
+            }
             Rs2NpcModel skele = Rs2Npc.getNpc("Skeleton");
             if (skele == null || skele.isDead()) {
                 return;
