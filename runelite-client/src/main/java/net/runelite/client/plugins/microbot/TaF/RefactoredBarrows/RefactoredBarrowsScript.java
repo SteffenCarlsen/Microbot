@@ -48,6 +48,7 @@ public class RefactoredBarrowsScript extends Script {
     private ScheduledFuture<?> WalkToTheChestFuture;
     private FightingMoundBrotherState fightingMoundBrotherState = FightingMoundBrotherState.ENTER_MOUND;
     public Rs2NpcModel currentBrother = null;
+    private List<BarrowsBrothers> triedTunnelBrothers = new ArrayList<>();
 
     private static void teleportToFerox() {
         if (Rs2Equipment.useRingAction(JewelleryLocationEnum.FEROX_ENCLAVE)) {
@@ -124,45 +125,51 @@ public class RefactoredBarrowsScript extends Script {
             sleepUntil(() -> !Rs2Player.isMoving() || BarrowsConstants.BARROWS_CHEST_AREA.distanceTo(Rs2Player.getWorldLocation()) <= 4, Rs2Random.between(2000, 5000));
         }
 
+        // When player is close enough to the chest
         if (Rs2Player.getWorldLocation().distanceTo(BarrowsConstants.BARROWS_CHEST_AREA) <= 4) {
             stopFutureWalker();
             TileObject chest = Rs2GameObject.findObjectById(BarrowsConstants.BARROWS_CHEST_ID);
+
+            // First click on chest (either spawns brother or allows looting)
             if (Rs2GameObject.interact(chest, "Open")) {
-                sleepUntil(() -> Microbot.getClient().getHintArrowNpc() != null && Microbot.getClient().getHintArrowNpc().getWorldLocation().distanceTo(Rs2Player.getWorldLocation()) <= 5, Rs2Random.between(5000, 6000));
+                // Wait to see if a brother spawns (hint arrow appears)
+                sleepUntil(() -> Microbot.getClient().getHintArrowNpc() != null ||
+                        Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(5000, 6000));
             }
 
-            checkForBrother(config);
+            // If a brother spawned, handle combat
+            if (Microbot.getClient().getHintArrowNpc() != null) {
+                // Fight the brother using existing method
+                checkForBrother(config);
 
+                // After brother is defeated, wait briefly
+                sleep(500, 1000);
+            }
+
+            // Second click to loot chest (only when no brother is present)
             if (Microbot.getClient().getHintArrowNpc() == null) {
-                int io = 0;
-                while (io < 2) {
-
-                    if (!super.isRunning()) {
-                        break;
-                    }
-
-                    if (Rs2GameObject.interact(chest, "Search")) {
-                        sleep(500, 1500);
-                    }
-
-                    if (Rs2Widget.hasWidget("Barrows chest")) {
-                        break;
-                    }
-
-                    io++;
+                // Try to loot chest
+                if (Rs2GameObject.interact(chest, "Search")) {
+                    sleepUntil(() -> Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(3000, 5000));
                 }
-                //we looted the chest time to reset
-                suppliesCheck(config);
-                ChestsOpened++;
-                tunnelBrother = null;
-                if (state != BarrowsState.BANKING) {
-                    if (config.teleportToFeroxOnEachKill()) {
-                        state = BarrowsState.BANKING;
-                        teleportToFerox();
-                    } else {
-                        state = BarrowsState.TRAVELING_TO_BARROWS;
-                    }
 
+                // If chest interface appears, handle looting
+                if (Rs2Widget.hasWidget("Barrows chest")) {
+                    // Reset for next run
+                    suppliesCheck(config);
+                    ChestsOpened++;
+                    tunnelBrother = null;
+                    triedTunnelBrothers.clear();
+
+                    // Handle post-chest state changes
+                    if (state != BarrowsState.BANKING) {
+                        if (config.teleportToFeroxOnEachKill()) {
+                            state = BarrowsState.BANKING;
+                            teleportToFerox();
+                        } else {
+                            state = BarrowsState.TRAVELING_TO_BARROWS;
+                        }
+                    }
                 }
             }
         }
@@ -178,7 +185,13 @@ public class RefactoredBarrowsScript extends Script {
         stopFutureWalker();
         goToTheMound(tunnelBrother);
         digIntoTheMound(tunnelBrother);
-        while (!Rs2Dialogue.isInDialogue()) {
+
+        // Add a maximum attempt counter to prevent infinite looping
+        int maxAttempts = 2;
+        int attempts = 0;
+
+        // Replace while loop with a do-while with safety checks
+        do {
             GameObject sarc = Rs2GameObject.get("Sarcophagus");
 
             if (!super.isRunning()) {
@@ -188,20 +201,47 @@ public class RefactoredBarrowsScript extends Script {
             if (Rs2GameObject.interact(sarc, "Search")) {
                 sleepUntil(() -> Rs2Player.isMoving(), Rs2Random.between(1000, 3000));
                 sleepUntil(() -> !Rs2Player.isMoving() || Rs2Player.isInCombat(), Rs2Random.between(3000, 6000));
-                sleepUntil(() -> Rs2Dialogue.isInDialogue(), Rs2Random.between(3000, 6000));
+
+                // Check for either dialogue or if we're already in the tunnel (Y > 9600)
+                sleepUntil(() -> Rs2Dialogue.isInDialogue() || Rs2Player.getWorldLocation().getY() > 9600,
+                        Rs2Random.between(3000, 6000));
             }
 
+            // If we're in a dialogue, handle entering the tunnel
             if (Rs2Dialogue.isInDialogue()) {
                 dialogueEnterTunnels();
-            }
-
-            if (Rs2Player.getWorldLocation().getPlane() != 3) {
-                //we're not in the mound
+                triedTunnelBrothers.clear();
                 break;
             }
 
+            // If we've already entered the tunnel without a dialogue
+            if (Rs2Player.getWorldLocation().getY() > 9600) {
+                Microbot.log("Entered tunnels without dialogue");
+                state = BarrowsState.NAVIGATING_TUNNELS;
+                return;
+            }
+
+            // If we're not in the mound anymore
+            if (Rs2Player.getWorldLocation().getPlane() != 3) {
+                break;
+            }
+
+            attempts++;
+            Microbot.log("Tunnel search attempt " + attempts + " of " + maxAttempts);
+
+        } while (attempts < maxAttempts);
+
+        // If we've exceeded our attempts, move on to the next brother
+        if (attempts >= maxAttempts) {
+            Microbot.log("Could not find tunnel entrance after " + maxAttempts + " attempts");
+            if (tunnelBrother != null) {
+                triedTunnelBrothers.add(tunnelBrother);
+            }
+            leaveTheMound();
+            state = BarrowsState.NAVIGATING_MOUND;
             return;
         }
+
         state = BarrowsState.NAVIGATING_TUNNELS;
     }
 
@@ -320,6 +360,7 @@ public class RefactoredBarrowsScript extends Script {
     }
 
     private BarrowsBrothers getBrotherToKill(List<BarrowsBrothers> alreadyKilledBrothers) {
+        // First try to find a non-killed, non-tunnel brother to kill
         for (BarrowsBrothers brother : BarrowsBrothers.values()) {
             if (!alreadyKilledBrothers.contains(brother)) {
                 if (tunnelBrother != null && tunnelBrother.equals(brother)) {
@@ -328,7 +369,38 @@ public class RefactoredBarrowsScript extends Script {
                 return brother;
             }
         }
-        return tunnelBrother;
+
+        // If tunnelBrother is known, return it
+        if (tunnelBrother != null) {
+            return tunnelBrother;
+        }
+
+        // If all brothers are killed and tunnel brother is unknown (after teleporting),
+        // systematically try each brother's mound until we find the tunnel
+        if (alreadyKilledBrothers.size() == BarrowsBrothers.values().length) {
+            Microbot.log("All brothers killed but tunnel is unknown. Finding tunnel brother...");
+
+            // Try brothers in order, skipping those we've already tried
+            for (BarrowsBrothers brother : BarrowsBrothers.values()) {
+                if (!triedTunnelBrothers.contains(brother)) {
+                    Microbot.log("Trying " + brother.name() + "'s mound to find tunnel");
+                    triedTunnelBrothers.add(brother); // Mark this brother as tried
+                    return brother;
+                }
+            }
+
+            // If we've tried all brothers, reset and start over
+            // This shouldn't happen unless there's another issue
+            if (triedTunnelBrothers.size() >= BarrowsBrothers.values().length) {
+                Microbot.log("Tried all brothers and couldn't find tunnel. Resetting search.");
+                triedTunnelBrothers.clear();
+                return BarrowsBrothers.values()[0];
+            }
+        }
+
+        // Fallback - should not reach here, but return first brother as default
+        Microbot.log("Returning a default brother as fallback. This should never happen, please report how you got to this state.");
+        return BarrowsBrothers.values()[0];
     }
 
     private List<BarrowsBrothers> getAlreadyKilledBrothers() {
