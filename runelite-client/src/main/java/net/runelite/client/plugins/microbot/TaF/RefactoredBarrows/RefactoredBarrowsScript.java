@@ -49,6 +49,7 @@ public class RefactoredBarrowsScript extends Script {
     private FightingMoundBrotherState fightingMoundBrotherState = FightingMoundBrotherState.ENTER_MOUND;
     public Rs2NpcModel currentBrother = null;
     private List<BarrowsBrothers> triedTunnelBrothers = new ArrayList<>();
+    private boolean SearchingForTunnel = false;
 
     private static void teleportToFerox() {
         if (Rs2Equipment.useRingAction(JewelleryLocationEnum.FEROX_ENCLAVE)) {
@@ -133,8 +134,8 @@ public class RefactoredBarrowsScript extends Script {
             // First click on chest (either spawns brother or allows looting)
             if (Rs2GameObject.interact(chest, "Open")) {
                 // Wait to see if a brother spawns (hint arrow appears)
-                sleepUntil(() -> Microbot.getClient().getHintArrowNpc() != null ||
-                        Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(5000, 6000));
+                sleepUntil(() -> Microbot.getClient().getHintArrowNpc() != null || Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(5000, 6000));
+                sleep(1600,2400);
             }
 
             // If a brother spawned, handle combat
@@ -148,9 +149,13 @@ public class RefactoredBarrowsScript extends Script {
 
             // Second click to loot chest (only when no brother is present)
             if (Microbot.getClient().getHintArrowNpc() == null) {
+                Rs2Walker.walkFastCanvas(BarrowsConstants.BARROWS_CHEST_AREA);
                 // Try to loot chest
                 if (Rs2GameObject.interact(chest, "Search")) {
-                    sleepUntil(() -> Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(3000, 5000));
+                    sleep(600,1200);
+                    sleepUntil(() -> Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(4000, 5000));
+                    Rs2GameObject.interact(chest, "Search");
+                    sleepUntil(() -> Rs2Widget.hasWidget("Barrows chest"), Rs2Random.between(2000, 4000));
                 }
 
                 // If chest interface appears, handle looting
@@ -160,6 +165,7 @@ public class RefactoredBarrowsScript extends Script {
                     ChestsOpened++;
                     tunnelBrother = null;
                     triedTunnelBrothers.clear();
+                    SearchingForTunnel = false;
 
                     // Handle post-chest state changes
                     if (state != BarrowsState.BANKING) {
@@ -229,7 +235,7 @@ public class RefactoredBarrowsScript extends Script {
             attempts++;
             Microbot.log("Tunnel search attempt " + attempts + " of " + maxAttempts);
 
-        } while (attempts < maxAttempts);
+        } while (attempts <= maxAttempts);
 
         // If we've exceeded our attempts, move on to the next brother
         if (attempts >= maxAttempts) {
@@ -277,7 +283,11 @@ public class RefactoredBarrowsScript extends Script {
                         currentBrother = new Rs2NpcModel(Microbot.getClient().getHintArrowNpc());
                         fightingMoundBrotherState = FightingMoundBrotherState.ATTACK_BROTHER;
                     } else {
-                        // No response, try again
+                        if (SearchingForTunnel) {
+                            Microbot.log("Searching for tunnel brother failed, resetting state.");
+                            fightingMoundBrotherState = FightingMoundBrotherState.LEAVE_MOUND;
+                            triedTunnelBrothers.add(brother);
+                        }
                         break;
                     }
                 }
@@ -384,7 +394,7 @@ public class RefactoredBarrowsScript extends Script {
             for (BarrowsBrothers brother : BarrowsBrothers.values()) {
                 if (!triedTunnelBrothers.contains(brother)) {
                     Microbot.log("Trying " + brother.name() + "'s mound to find tunnel");
-                    triedTunnelBrothers.add(brother); // Mark this brother as tried
+                    // Don't add to triedTunnelBrothers here, do it only after confirming
                     return brother;
                 }
             }
@@ -405,8 +415,8 @@ public class RefactoredBarrowsScript extends Script {
 
     private List<BarrowsBrothers> getAlreadyKilledBrothers() {
         if (everyBrotherWasKilled()) {
+            SearchingForTunnel = true;
             Microbot.log("All brothers marked as killed - Checking all brothers for tunnel.");
-            return new ArrayList<>();
         }
         List<BarrowsBrothers> alreadyKilledBrothers = new ArrayList<>();
 
@@ -741,6 +751,7 @@ public class RefactoredBarrowsScript extends Script {
     }
 
     public void digIntoTheMound(BarrowsBrothers brothers) {
+        Microbot.status = "Digging into the mound of " + brothers.name();
         while (brothers.getHumpWP().contains(Rs2Player.getWorldLocation()) && Rs2Player.getWorldLocation().getPlane() != 3) {
 
             if (!super.isRunning()) {
@@ -761,10 +772,12 @@ public class RefactoredBarrowsScript extends Script {
                 break;
             }
         }
+        sleepUntil(() -> Rs2Player.getWorldLocation().getPlane() == 3, Rs2Random.between(3000, 5000));
         state = BarrowsState.FIGHTING_MOUND_BROTHER;
     }
 
     public void goToTheMound(BarrowsBrothers brother) {
+        Microbot.status = "Walking to the mound of " + brother.name();
         while (!brother.getHumpWP().contains(Rs2Player.getWorldLocation())) {
             int totalTiles = brother.getHumpWP().toWorldPointList().size();
             WorldPoint randomMoundTile;
@@ -790,6 +803,9 @@ public class RefactoredBarrowsScript extends Script {
                     break;
                 }
             } else {
+                if (!Rs2Player.isMoving() && brother.getHumpWP().contains(Rs2Player.getWorldLocation())) {
+                    return;
+                }
                 Microbot.log("At the mound, but we can't dig yet.");
                 randomMoundTile = brother.getHumpWP().toWorldPointList().get(Rs2Random.between(0, (totalTiles - 1)));
 
