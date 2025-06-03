@@ -17,7 +17,7 @@ import java.awt.*;
 import java.time.Instant;
 
 @PluginDescriptor(
-        name = PluginDescriptor.TaFCat + "Refactored Barrows",
+        name = PluginDescriptor.TaFCat + "Refactored Barrows - Real",
         description = "Runs barrows for you",
         tags = {"Barrows", "mm", "Money making"},
         enabledByDefault = false
