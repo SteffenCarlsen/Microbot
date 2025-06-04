@@ -49,7 +49,7 @@ public class AmmoniteCrabScript extends Script {
                     hijackTimer = 0;
                 }
 
-                if (hijackTimer > 10) {
+                if (hijackTimer > 6) {
                     ammoniteCrabState = AmmoniteCrabState.HOP_WORLD;
                 }
 
@@ -93,7 +93,6 @@ public class AmmoniteCrabScript extends Script {
                 switch (ammoniteCrabState) {
                     case FIGHT:
                         if (!Microbot.getClient().getLocalPlayer().isInteracting() && !Rs2Combat.inCombat()) {
-                            Rs2Tab.switchToCombatOptionsTab();
                             Rs2Combat.enableAutoRetialiate();
                         }
 
