@@ -469,9 +469,9 @@
 						<configuration>
 							<classesDirectory>${project.build.outputDirectory}</classesDirectory>
 							<includes>
-								<include>net/runelite/client/plugins/microbot/example/**</include>
+								<include>net/runelite/client/plugins/microbot/TaF/AmmoniteCrabs/**</include>
 							</includes>
-							<finalName>example</finalName>
+							<finalName>AmmoniteCrabs</finalName>
 							<archive>
 								<manifest>
 									<addClasspath>true</addClasspath>
