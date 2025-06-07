@@ -18,11 +18,11 @@ public class Rs2ItemModel {
     private int id;
     @Getter
     @Setter
-	private int quantity;
+    public int quantity;
     @Getter
 	private int slot = -1;
     @Getter
-	private String name;
+	public String name;
     @Getter
 	private String[] inventoryActions;
     @Getter
