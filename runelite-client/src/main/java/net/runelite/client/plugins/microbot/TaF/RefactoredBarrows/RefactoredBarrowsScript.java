@@ -51,7 +51,8 @@ public class RefactoredBarrowsScript extends Script {
     private List<BarrowsBrothers> triedTunnelBrothers = new ArrayList<>();
     private boolean SearchingForTunnel = false;
 
-    private static void teleportToFerox() {
+    private void teleportToFerox() {
+        stopFutureWalker();
         if (Rs2Equipment.useRingAction(JewelleryLocationEnum.FEROX_ENCLAVE)) {
             Microbot.log("We're out of supplies. Teleporting.");
             sleepUntil(() -> Rs2Player.isAnimating(), Rs2Random.between(2000, 4000));
@@ -166,7 +167,7 @@ public class RefactoredBarrowsScript extends Script {
                     tunnelBrother = null;
                     triedTunnelBrothers.clear();
                     SearchingForTunnel = false;
-
+                    stopFutureWalker();
                     // Handle post-chest state changes
                     if (state != BarrowsState.BANKING) {
                         if (config.teleportToFeroxOnEachKill()) {
@@ -1325,6 +1326,7 @@ public class RefactoredBarrowsScript extends Script {
         Microbot.log("Shutting down...");
         ChestsOpened = 0;
         barrowsPieces = new ArrayList<>();
+        stopFutureWalker();
         super.shutdown();
     }
 }
