@@ -664,7 +664,6 @@ public class RefactoredBarrowsScript extends Script {
     }
 
     private boolean preflightChecks() {
-        stopFutureWalker();
         if (Rs2Player.getQuestState(Quest.HIS_FAITHFUL_SERVANTS) != QuestState.FINISHED) {
             Microbot.log("You must complete the 'His Faithful Servants' quest to use the Barrows script. Complete one manual barrows run to unlock the webwalker.");
             return false;
