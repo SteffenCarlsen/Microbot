@@ -5072,8 +5072,8 @@
 1439 9599 1	1440 9615 1	Pass-Through;Entrance;51375
 1440 9509 1	1435 3128 0	Pass-Through;Entrance;51375
 1435 3128 0	1440 9509 1	Pass-Through;Entrance;51375
-1402 9704 0	1440 9653 0	Pass-Through;Entrance;51375
-1440 9653 0	1402 9704 0	Pass-Through;Entrance;51375
+1440 9653 0	1403 9704 0	Pass-Through;Entrance;51377
+1403 9704 0	1440 9653 0	Pass-Through;Entrance;51377
 
 
 # Legends Guild

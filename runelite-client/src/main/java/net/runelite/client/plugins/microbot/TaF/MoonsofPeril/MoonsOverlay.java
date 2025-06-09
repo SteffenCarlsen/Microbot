@@ -3,9 +3,12 @@ package net.runelite.client.plugins.microbot.TaF.MoonsofPeril;
 import net.runelite.api.NPC;
 import net.runelite.api.Skill;
 import net.runelite.client.plugins.microbot.Microbot;
+import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.BossToKill;
 import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.MoonsState;
+import net.runelite.client.plugins.microbot.TaF.salamanders.SalamanderScript;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
+import net.runelite.client.plugins.microbot.util.tile.Rs2Tile;
 import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
@@ -74,71 +77,62 @@ public class MoonsOverlay extends OverlayPanel {
             }
 
             // Blood Jaguar Status
-            NPC bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Blood Jaguar:")
-                    .right(bloodJaguar != null ? "Present" : "Not present")
-                    .rightColor(bloodJaguar != null ? Color.RED : Color.GREEN)
-                    .build());
-
-            if (bloodJaguar != null) {
+            if (plugin.moonsScript.moonsState.equals(MoonsState.FIGHTING_BLOOD_MOON)) {
+                NPC bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
                 panelComponent.getChildren().add(LineComponent.builder()
-                        .left("Bloodspawn tick:")
-                        .right(String.valueOf(MoonsPlugin.lastBloodSpecialSpawnTick))
-                        .rightColor(MoonsPlugin.lastBloodSpecialSpawnTick == MoonsPlugin.globalTickCount ? Color.GREEN : Color.RED)
+                        .left("Blood Jaguar:")
+                        .right(bloodJaguar != null ? "Present" : "Not present")
+                        .rightColor(bloodJaguar != null ? Color.RED : Color.GREEN)
                         .build());
-                panelComponent.getChildren().add(LineComponent.builder()
-                        .left("Current tick:")
-                        .right(String.valueOf(MoonsPlugin.globalTickCount))
-                        .rightColor(Color.GREEN)
-                        .build());
-                panelComponent.getChildren().add(LineComponent.builder()
-                        .left("Safe to Move:")
-                        .right(String.valueOf(MoonsScript.moveToBloodTile))
-                        .rightColor(MoonsScript.moveToBloodTile ? Color.GREEN : Color.RED)
-                        .build());
+                if (bloodJaguar != null) {
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Bloodspawn tick:")
+                            .right(String.valueOf(MoonsPlugin.lastBloodSpecialSpawnTick))
+                            .rightColor(MoonsPlugin.lastBloodSpecialSpawnTick == MoonsPlugin.globalTickCount ? Color.GREEN : Color.RED)
+                            .build());
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Current tick:")
+                            .right(String.valueOf(MoonsPlugin.globalTickCount))
+                            .rightColor(Color.GREEN)
+                            .build());
+                    panelComponent.getChildren().add(LineComponent.builder()
+                            .left("Safe to Move:")
+                            .right(String.valueOf(MoonsScript.moveToBloodTile))
+                            .rightColor(MoonsScript.moveToBloodTile ? Color.GREEN : Color.RED)
+                            .build());
+                }
             }
-
-            // Inventory Info
+            // Boss kill status
+            var killedNpcs = MoonsHelpers.getBossesKilled();
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Food:")
-                    .right(String.valueOf(Rs2Inventory.itemQuantity(MoonsConstants.COOKED_FOOD_ID)))
-                    .build());
-
-            // Calculate potion total
-            int moonlightOne = Rs2Inventory.itemQuantity(29080);
-            int moonlightTwo = Rs2Inventory.itemQuantity(29081);
-            int moonlightThree = Rs2Inventory.itemQuantity(29082);
-            int moonlightFour = Rs2Inventory.itemQuantity(29083);
-            int potionsTotal = moonlightOne + moonlightTwo + moonlightThree + moonlightFour;
-
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Potions:")
-                    .right(String.valueOf(potionsTotal))
-                    .build());
-
-            // Settings
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Eat at:")
-                    .right(config.eatAt() + "%")
+                    .left("Blood Moon:")
+                    .right(killedNpcs.contains(BossToKill.BLOOD) ? "✓" : "✗")
+                    .rightColor(killedNpcs.contains(BossToKill.BLOOD) ? Color.GREEN : Color.RED)
                     .build());
 
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Pray at:")
-                    .right(config.prayerAt() + "%")
+                    .left("Eclipse:")
+                    .right(killedNpcs.contains(BossToKill.ECLIPSE) ? "✓" : "✗")
+                    .rightColor(killedNpcs.contains(BossToKill.ECLIPSE) ? Color.GREEN : Color.RED)
                     .build());
 
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Blue Moon:")
+                    .right(killedNpcs.contains(BossToKill.MOON) ? "✓" : "✗")
+                    .rightColor(killedNpcs.contains(BossToKill.MOON) ? Color.GREEN : Color.RED)
+                    .build());
+
+            // Loot
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Lunar chests:")
+                    .right(String.valueOf(plugin.moonsScript.chestsLooted))
+                    .leftColor(Color.WHITE)
+                    .rightColor(Color.GREEN)
+                    .build());
             // Runtime
             panelComponent.getChildren().add(LineComponent.builder()
                     .left("Runtime:")
                     .right(plugin.getTimeRunning())
-                    .build());
-
-            // Dangerous Tile Count
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Danger Tiles:")
-                    .right(String.valueOf(plugin.dangerousGraphicsObjectTiles.size()))
-                    .rightColor(plugin.dangerousGraphicsObjectTiles.isEmpty() ? Color.GREEN : Color.RED)
                     .build());
 
         } catch (Exception ex) {
@@ -150,11 +144,17 @@ public class MoonsOverlay extends OverlayPanel {
     private Color getStateColor(MoonsState moonsState) {
         switch (moonsState) {
             case FIGHTING_BLOOD_MOON:
-                return Color.RED;
             case GOING_TO_BLOOD_MOON:
+                return Color.RED;
+            case GOING_TO_ECLIPSE:
+            case FIGHTING_ECLIPSE:
+                return Color.YELLOW;
+            case GOING_TO_BLUE_MOON:
+            case FIGHTING_BLUE_MOON:
+                return Color.cyan;
             case GOING_TO_COOKER:
             case GOING_TO_LOOT:
-                return Color.YELLOW;
+                return Color.GREEN;
             case GETTING_SUPPLIES:
                 return Color.CYAN;
             default:
@@ -175,12 +175,5 @@ public class MoonsOverlay extends OverlayPanel {
         if (ratio <= 0.25) return Color.RED;
         if (ratio <= 0.5) return Color.ORANGE;
         return Color.CYAN;
-    }
-
-    private String formatDuration(Duration duration) {
-        long hours = duration.toHours();
-        long minutes = duration.toMinutesPart();
-        long seconds = duration.toSecondsPart();
-        return String.format("%02d:%02d:%02d", hours, minutes, seconds);
     }
 }

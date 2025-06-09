@@ -7,6 +7,7 @@ import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.BossToKill;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
 import net.runelite.client.plugins.microbot.util.npc.Rs2NpcModel;
+import net.runelite.client.plugins.microbot.util.player.Rs2Player;
 import org.jetbrains.annotations.Nullable;
 
 import java.util.ArrayList;
@@ -29,7 +30,18 @@ public class MoonsHelpers {
     }
 
     public static @Nullable Rs2NpcModel getClosestJaguar(WorldPoint safeTile) {
-        return Rs2Npc.getNpcs(MoonsConstants.BLOOD_JAGUAR_NPC_ID)
+        // If there's no safe tile, return null or handle it differently
+        if (safeTile == null) {
+            // Option 1: Use player's position instead
+            WorldPoint playerLocation = Rs2Player.getWorldLocation();
+            return Rs2Npc.getNpcs("Blood jaguar")
+                    .min(Comparator.comparingInt(jaguar ->
+                            jaguar.getWorldLocation().distanceTo(playerLocation)))
+                    .orElse(null);
+        }
+
+        // Original code - only executes when safeTile is not null
+        return Rs2Npc.getNpcs("Blood jaguar")
                 .min(Comparator.comparingInt(jaguar ->
                         jaguar.getWorldLocation().distanceTo(safeTile)))
                 .orElse(null);

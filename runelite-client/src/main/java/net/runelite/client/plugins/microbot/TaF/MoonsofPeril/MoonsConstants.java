@@ -40,4 +40,5 @@ public class MoonsConstants {
     public static final int BLUE_MOON_STORMS = 13027;
     public static final int[] MOONLIGHT_POTIONS = {29080, 29081, 29082, 29083};
 
+    public static final int BLUE_MOON_GRAPHICS = 2771;
 }
