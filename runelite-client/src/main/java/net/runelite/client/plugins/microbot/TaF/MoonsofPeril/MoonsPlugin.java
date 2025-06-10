@@ -33,6 +33,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
+import static net.runelite.client.plugins.microbot.util.Global.sleep;
 import static net.runelite.client.plugins.microbot.util.Global.sleepUntil;
 
 @PluginDescriptor(
@@ -86,67 +87,68 @@ public class MoonsPlugin extends Plugin {
     private final int TICK_DELAY = 2;
     private static boolean notAlreadyRunning = true;
     private void startJaguarTracking() {
-        Microbot.log("Starting Blood Jaguar tracking");
         scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
+                if (MoonsScript.moonsState != MoonsState.FIGHTING_BLOOD_MOON) {
+                    sleep(1000,2000);
+                    return;
+                }
                 var bloodJaguarExist = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
                 if (bloodJaguarExist != null) {
                     long ticksSinceLastSpawn = globalTickCount - lastBloodSpecialSpawnTick;
                     if (ticksSinceLastSpawn == TICK_DELAY && notAlreadyRunning) {
-                        scheduledExecutorService.schedule(() -> {
-                            try {
-                                notAlreadyRunning = false;
-                                NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
-                                if (floorTileNPC == null) {
-                                    return;
-                                }
-
-                                WorldPoint floorTileLocation = floorTileNPC.getWorldLocation();
-                                if (floorTileLocation == null) {
-                                    return;
-                                }
-
-                                Rs2NpcModel bloodJaguar = MoonsHelpers.getClosestJaguar(floorTileLocation);
-                                if (bloodJaguar == null) {
-                                    return;
-                                }
-
-                                WorldPoint closestTile = MoonsScript.bloodMoonSafeCircles.stream()
-                                        .min(Comparator.comparingDouble(tile -> tile.distanceTo2D(floorTileLocation)))
-                                        .orElse(null);
-
-                                if (closestTile == null) {
-                                    return;
-                                }
-
-                                WorldPoint playerLocation = Rs2Player.getWorldLocation();
-                                if (playerLocation == null) {
-                                    return;
-                                }
-
-                                if (playerLocation.distanceTo(closestTile) > 0) {
-                                    var afterMove = MoonsPlugin.globalTickCount;
-                                    Rs2Walker.walkFastCanvas(closestTile);
-                                    // Record the current tick so we can wait exactly 1 tick
-                                    final long moveCompleteTick = afterMove + 1;
-                                    // Wait until exactly 1 tick has passed
-                                    sleepUntil(() -> MoonsPlugin.globalTickCount > moveCompleteTick, 1000);
-
-                                    // Now attack the jaguar if we're on the safe tile
-                                    playerLocation = Rs2Player.getWorldLocation(); // Get updated position
-                                    if (playerLocation != null &&
-                                            bloodJaguar != null &&
-                                            !bloodJaguar.isDead() &&
-                                            playerLocation.distanceTo(closestTile) <= 0) {
-                                        Rs2Npc.attack(bloodJaguar);
-                                    }
-                                }
-                            } catch (Exception e) {
-                                Microbot.log("Error while trying to attack Blood Jaguar: " + e.getMessage());
-                            } finally {
-                                notAlreadyRunning = true;
+                        try {
+                            notAlreadyRunning = false;
+                            NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
+                            if (floorTileNPC == null) {
+                                return;
                             }
-                        }, 0, TimeUnit.MILLISECONDS);
+
+                            WorldPoint floorTileLocation = floorTileNPC.getWorldLocation();
+                            if (floorTileLocation == null) {
+                                return;
+                            }
+
+                            Rs2NpcModel bloodJaguar = MoonsHelpers.getClosestJaguar(floorTileLocation);
+                            if (bloodJaguar == null) {
+                                return;
+                            }
+
+                            WorldPoint closestTile = MoonsScript.bloodMoonSafeCircles.stream()
+                                    .min(Comparator.comparingDouble(tile -> tile.distanceTo2D(floorTileLocation)))
+                                    .orElse(null);
+
+                            if (closestTile == null) {
+                                return;
+                            }
+
+                            WorldPoint playerLocation = Rs2Player.getWorldLocation();
+                            if (playerLocation == null) {
+                                return;
+                            }
+
+                            if (playerLocation.distanceTo(closestTile) > 0) {
+                                var afterMove = MoonsPlugin.globalTickCount;
+                                Rs2Walker.walkFastCanvas(closestTile);
+                                // Record the current tick so we can wait exactly 1 tick
+                                final long moveCompleteTick = afterMove + 1;
+                                // Wait until exactly 1 tick has passed
+                                sleepUntil(() -> MoonsPlugin.globalTickCount > moveCompleteTick, 1000);
+
+                                // Now attack the jaguar if we're on the safe tile
+                                playerLocation = Rs2Player.getWorldLocation(); // Get updated position
+                                if (playerLocation != null &&
+                                        bloodJaguar != null &&
+                                        !bloodJaguar.isDead() &&
+                                        playerLocation.distanceTo(closestTile) <= 0) {
+                                    Rs2Npc.attack(bloodJaguar);
+                                }
+                            }
+                        } catch (Exception e) {
+                            Microbot.log("Error while trying to attack Blood Jaguar: " + e.getMessage());
+                        } finally {
+                            notAlreadyRunning = true;
+                        }
                     }
                 }
             } catch (Exception e) {
@@ -161,6 +163,7 @@ public class MoonsPlugin extends Plugin {
         overlayManager.remove(moonsOverlay);
         tileExecutor.shutdown();
         dangerousGraphicsObjectTiles.clear();
+        scheduledExecutorService.shutdown();
     }
 
     protected void init() {

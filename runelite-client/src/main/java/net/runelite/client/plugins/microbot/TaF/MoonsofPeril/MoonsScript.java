@@ -13,6 +13,8 @@ import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.MoonsState;
 import net.runelite.client.plugins.microbot.util.antiban.Rs2Antiban;
 import net.runelite.client.plugins.microbot.util.antiban.Rs2AntibanSettings;
 import net.runelite.client.plugins.microbot.util.camera.Rs2Camera;
+import net.runelite.client.plugins.microbot.util.combat.AttackTypeHelpers.AttackType;
+import net.runelite.client.plugins.microbot.util.combat.Rs2AttackStyles;
 import net.runelite.client.plugins.microbot.util.combat.Rs2Combat;
 import net.runelite.client.plugins.microbot.util.equipment.Rs2Equipment;
 import net.runelite.client.plugins.microbot.util.gameobject.Rs2GameObject;
@@ -237,6 +239,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_BLOOD_MOON:
                         handleEquipment(config, BossToKill.BLOOD);
+                        Rs2AttackStyles.setAttackStyle(AttackType.SLASH);
                         Rs2Walker.walkTo(MoonsConstants.BLOOD_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.BLOOD_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.BLOOD_STATUE, "Use");
@@ -260,6 +263,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_BLUE_MOON:
                         handleEquipment(config, BossToKill.MOON);
+                        Rs2AttackStyles.setAttackStyle(AttackType.CRUSH);
                         Rs2Walker.walkTo(MoonsConstants.BLUE_MOON_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.BLUE_MOON_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.BLUE_MOON_STATUE, "Use");
@@ -283,6 +287,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_ECLIPSE:
                         handleEquipment(config, BossToKill.ECLIPSE);
+                        Rs2AttackStyles.setAttackStyle(AttackType.STAB);
                         Rs2Walker.walkTo(MoonsConstants.ECLIPSE_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.ECLIPSE_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.ECLIPSE_MOON_STATUE, "Use");
@@ -770,7 +775,7 @@ public class MoonsScript extends Script {
 
     private void handleSupplies(MoonsConfig config) {
         int potionsTotal = calculatePotionTotal();
-        if (Rs2Player.getWorldLocation().distanceTo(MoonsConstants.COOKER_LOCATION) > 15 && (needMoreFood(config) || needMorePotions(potionsTotal, config))) {
+        if (Rs2Player.getWorldLocation().distanceTo(MoonsConstants.COOKER_LOCATION) > 15) {
             Rs2Walker.walkTo(MoonsConstants.COOKER_LOCATION);
             return;
         }
