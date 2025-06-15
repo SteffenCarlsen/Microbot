@@ -8,13 +8,13 @@ The `Rs2Prayer` class offers functionalities to manage and interact with prayer 
 ### `toggle(Rs2PrayerEnum name)`
 - **Parameters**:
     - `name`: `Rs2PrayerEnum` - The enum entry representing the prayer to toggle.
-- **Description**: Toggles the specified prayer without checking its current moonsState.
+- **Description**: Toggles the specified prayer without checking its current state.
 
 ### `toggle(Rs2PrayerEnum name, boolean on)`
 - **Parameters**:
     - `name`: `Rs2PrayerEnum` - The enum entry representing the prayer to toggle.
-    - `on`: `boolean` - Desired moonsState of the prayer; `true` to activate, `false` to deactivate.
-- **Description**: Toggles the specified prayer to the desired moonsState. Checks the current moonsState to avoid unnecessary toggling.
+    - `on`: `boolean` - Desired state of the prayer; `true` to activate, `false` to deactivate.
+- **Description**: Toggles the specified prayer to the desired state. Checks the current state to avoid unnecessary toggling.
 
 ### `isPrayerActive(Rs2PrayerEnum name)`
 - **Parameters**:

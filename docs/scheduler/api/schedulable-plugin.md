@@ -4,7 +4,7 @@
 
 The `SchedulablePlugin` interface is the core integration point between standard RuneLite plugins and the Microbot Plugin Scheduler system. It defines a contract that plugins must implement to participate in the automated scheduling system, allowing them to be started and stopped based on configurable conditions while maintaining control over their execution lifecycle.
 
-This interface leverages the event-based architecture of RuneLite to enable communication between the scheduler and plugins, with methods that define start and stop conditions, handle moonsState transitions, and provide mechanisms for critical section protection.
+This interface leverages the event-based architecture of RuneLite to enable communication between the scheduler and plugins, with methods that define start and stop conditions, handle state transitions, and provide mechanisms for critical section protection.
 
 ## Interface Architecture
 
@@ -23,12 +23,12 @@ The interface follows these core design principles:
 
 #### `void onPluginScheduleEntrySoftStopEvent(PluginScheduleEntrySoftStopEvent event)`
 
-This is the only method without a default implementation that plugins must implement. It handles the soft stop request from the scheduler, which is triggered when stop conditions are met or when manual stop is initiated. The implementation should ensure the plugin stops gracefully, preserving moonsState and cleaning up resources before terminating.
+This is the only method without a default implementation that plugins must implement. It handles the soft stop request from the scheduler, which is triggered when stop conditions are met or when manual stop is initiated. The implementation should ensure the plugin stops gracefully, preserving state and cleaning up resources before terminating.
 
 The implementation is expected to:
 
 1. Verify the event is targeted at this specific plugin
-2. Save any current moonsState if needed
+2. Save any current state if needed
 3. Clean up resources and close interfaces
 4. Schedule the actual stop on the RuneLite client thread
 5. Disable and stop the plugin through the Microbot plugin manager
@@ -47,8 +47,8 @@ Specifies when a plugin should stop running. The default implementation returns 
 
 - Time limits or specific time windows
 - Resource counts (items collected, XP gained)
-- Player moonsState (inventory full, health low)
-- Game moonsState (logged out, in combat)
+- Player state (inventory full, health low)
+- Game state (logged out, in combat)
 
 The scheduler continuously monitors these conditions while the plugin runs.
 
@@ -56,9 +56,9 @@ The scheduler continuously monitors these conditions while the plugin runs.
 
 #### `void onStopConditionCheck()`
 
-This method is called periodically (approximately once per second) while the plugin is running, just before the stop conditions are evaluated. Its purpose is to allow plugins to update any dynamic moonsState information that might affect condition evaluation.
+This method is called periodically (approximately once per second) while the plugin is running, just before the stop conditions are evaluated. Its purpose is to allow plugins to update any dynamic state information that might affect condition evaluation.
 
-This is particularly useful when conditions depend on changing game moonsState, such as inventory contents or skill levels. Plugins can use this hook to keep condition evaluation accurate without having to implement separate timer logic.
+This is particularly useful when conditions depend on changing game state, such as inventory contents or skill levels. Plugins can use this hook to keep condition evaluation accurate without having to implement separate timer logic.
 
 #### `void reportFinished(String reason, boolean success)`
 
@@ -98,7 +98,7 @@ Deactivates the lock, allowing the plugin to be stopped when conditions are met.
 
 #### `Boolean toggleLock(Condition stopConditions)`
 
-Toggles the lock moonsState and returns the new moonsState (`true` for locked, `false` for unlocked).
+Toggles the lock state and returns the new state (`true` for locked, `false` for unlocked).
 
 ## Stop Mechanisms
 
@@ -122,7 +122,7 @@ Plugins can be stopped through various mechanisms:
 4. **Error**: An exception occurs in the plugin
    - Appears as `StopReason.ERROR`
    - Immediate stop without soft-stop sequence
-   - Flow: Exception → PluginScheduleEntry.setLastStopReasonType(ERROR) → Plugin disabled → SchedulerPlugin returns to SCHEDULING moonsState
+   - Flow: Exception → PluginScheduleEntry.setLastStopReasonType(ERROR) → Plugin disabled → SchedulerPlugin returns to SCHEDULING state
 
 5. **Hard Stop**: Forced termination after soft-stop timeout
    - Appears as `StopReason.HARD_STOP`
@@ -222,17 +222,17 @@ Critical operations in plugins should be protected with the locking mechanism:
 
 For plugins with dynamic stop conditions:
 
-1. Override `onStopConditionCheck()` to update condition moonsState
+1. Override `onStopConditionCheck()` to update condition state
 2. Keep these updates lightweight and focused
 3. Avoid heavy computation or network operations
-4. Update counters, flags, or other simple moonsState variables
+4. Update counters, flags, or other simple state variables
 
 ### Graceful Stopping
 
 When implementing the stop event handler:
 
 1. Check that the event is intended for this plugin
-2. Save any critical moonsState information
+2. Save any critical state information
 3. Close any open interfaces or dialogs
 4. Release resources and cancel any pending operations
 5. Use the client thread to ensure thread safety
@@ -303,7 +303,7 @@ Microbot.getEventBus().post(new PluginScheduleEntryFinishedEvent(
 @Subscribe
 public void onPluginScheduleEntryFinishedEvent(PluginScheduleEntryFinishedEvent event) {
     if (currentPlugin != null && event.getPlugin() == currentPlugin.getPlugin()) {
-        // Stop the plugin with the success moonsState from the event
+        // Stop the plugin with the success state from the event
         currentPlugin.stop(event.isSuccess(), StopReason.PLUGIN_FINISHED, event.getReason());
     }
 }
@@ -339,15 +339,15 @@ The `SchedulablePlugin` interface methods may be called from different threads:
 
 - Events are typically dispatched on the RuneLite event thread
 - Condition checks are called from the scheduler's timer thread
-- Plugin operations should be performed on the client thread for game moonsState interactions
+- Plugin operations should be performed on the client thread for game state interactions
 
-Proper thread management is essential for stable operation. Use `Microbot.getClientThread().invokeLater()` for game moonsState interactions.
+Proper thread management is essential for stable operation. Use `Microbot.getClientThread().invokeLater()` for game state interactions.
 
 ### Serialization Impact
 
 The `PluginScheduleEntry` class handles serialization of plugin schedules, but plugin instances themselves are marked as `transient`. This means:
 
-1. Any plugin-specific moonsState must be managed separately
+1. Any plugin-specific state must be managed separately
 2. Plugin references are re-established when schedules are loaded
 3. Condition objects are serialized and deserialized, so they should be designed with serialization in mind
 
@@ -366,7 +366,7 @@ When implementing the `SchedulablePlugin` interface, consider the following best
 
 5. **Handle Time Appropriately**: Include time-based conditions in your stop conditions to ensure your plugin doesn't run indefinitely.
 
-6. **Update Conditions**: Use `onStopConditionCheck()` to refresh dynamic conditions based on changing game moonsState.
+6. **Update Conditions**: Use `onStopConditionCheck()` to refresh dynamic conditions based on changing game state.
 
 ## Component Relationships
 
@@ -380,7 +380,7 @@ The `SchedulablePlugin` interface is part of a larger system that enables automa
 │   (Central Orchestrator)      │
 ├───────────────────────────────┤
 │ - Manages scheduling cycle    │
-│ - Handles moonsState transitions   │
+│ - Handles state transitions   │
 │ - Evaluates conditions        │
 │ - Starts & stops plugins      │
 └─────────────────┬─────────────┘
@@ -391,7 +391,7 @@ The `SchedulablePlugin` interface is part of a larger system that enables automa
 │      PluginScheduleEntry      │
 │        (Data Model)           │
 ├───────────────────────────────┤
-│ - Stores config & moonsState       │
+│ - Stores config & state       │
 │ - Tracks execution metrics    │
 │ - Contains conditions         │
 │ - References plugin instance  │
@@ -416,7 +416,7 @@ The `SchedulablePlugin` interface is part of a larger system that enables automa
 
 - **Primary Role:** Central controller that manages the entire scheduling system
 - **Responsibilities:**
-  - Maintains the scheduler's moonsState machine (16 distinct states)
+  - Maintains the scheduler's state machine (16 distinct states)
   - Executes the scheduling algorithm to determine which plugin runs next
   - Processes condition evaluations to start/stop plugins
   - Manages integration with other systems (BreakHandler, AutoLogin)
@@ -424,12 +424,12 @@ The `SchedulablePlugin` interface is part of a larger system that enables automa
 
 #### 2. PluginScheduleEntry (Data Model)
 
-- **Primary Role:** Container for plugin scheduling configuration and execution moonsState
+- **Primary Role:** Container for plugin scheduling configuration and execution state
 - **Responsibilities:**
   - Stores start and stop conditions for a specific plugin
   - Tracks execution metrics (run count, duration, last run time)
   - Maintains plugin priority and randomization settings
-  - Records moonsState information (enabled/disabled, running/stopped)
+  - Records state information (enabled/disabled, running/stopped)
   - Handles watchdog functionality to monitor plugin execution
 
 #### 3. SchedulablePlugin (API Contract)
@@ -534,7 +534,7 @@ When implementing the `SchedulablePlugin` interface in your plugin, consider the
            return;
        }
        
-       // Save moonsState if needed
+       // Save state if needed
        saveCurrentProgress();
        
        // Log the stop reason
@@ -614,7 +614,7 @@ START SELECTION
         Continue to next priority group
         
   IF no plugin selected:
-    Return null (scheduler will enter BREAK moonsState)
+    Return null (scheduler will enter BREAK state)
   ELSE:
     Return selected plugin
 END SELECTION
@@ -654,7 +654,7 @@ This approach ensures all plugins get fair execution time while still respecting
 
 ## State Transition Flow and Condition Evaluation
 
-The scheduler manages a complex moonsState machine that determines when and how plugins are executed. Here's how your plugin interacts with this moonsState machine:
+The scheduler manages a complex state machine that determines when and how plugins are executed. Here's how your plugin interacts with this state machine:
 
 ### Key State Transitions
 
@@ -679,9 +679,9 @@ The scheduler manages a complex moonsState machine that determines when and how 
 ### Condition Evaluation Cycle
 
 ```text
-While in RUNNING_PLUGIN moonsState:
+While in RUNNING_PLUGIN state:
   Every ~1 second:
-    Call plugin.onStopConditionCheck() to refresh condition moonsState
+    Call plugin.onStopConditionCheck() to refresh condition state
     Evaluate plugin's stop conditions
     Evaluate user-defined stop conditions
     IF any condition is true:
@@ -753,7 +753,7 @@ To make the most of the Scheduler system, follow these guidelines when implement
    }
    ```
 
-5. **Update Condition State**: Implement `onStopConditionCheck()` to refresh any dynamic condition moonsState.
+5. **Update Condition State**: Implement `onStopConditionCheck()` to refresh any dynamic condition state.
 
    ```java
    @Override
@@ -764,7 +764,7 @@ To make the most of the Scheduler system, follow these guidelines when implement
    }
    ```
 
-6. **Design for Recovery**: Make your plugin resilient to interruptions by saving moonsState periodically.
+6. **Design for Recovery**: Make your plugin resilient to interruptions by saving state periodically.
 
 7. **Balance Priorities**: Set appropriate priorities for your plugin to ensure it runs when most appropriate.
 

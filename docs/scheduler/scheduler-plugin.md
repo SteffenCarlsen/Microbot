@@ -10,8 +10,8 @@ The scheduler system consists of three main components that work together:
 
 | Component | Role | Responsibility |
 |-----------|------|----------------|
-| `SchedulerPlugin` | **Orchestrator** | Coordinates the overall scheduling process, moonsState transitions, and integration with other systems |
-| `PluginScheduleEntry` | **Data Model** | Holds configuration and execution moonsState for each scheduled plugin |
+| `SchedulerPlugin` | **Orchestrator** | Coordinates the overall scheduling process, state transitions, and integration with other systems |
+| `PluginScheduleEntry` | **Data Model** | Holds configuration and execution state for each scheduled plugin |
 | `SchedulablePlugin` | **Interface** | Implemented by RuneLite plugins to define start/stop conditions and handle events |
 
 ### Component Interaction Flow
@@ -203,14 +203,14 @@ New schedule entries can be added through the `ScheduleFormPanel`:
 
 ## State Management and Execution Flow
 
-The SchedulerPlugin implements a sophisticated moonsState machine that manages the entire plugin scheduling life cycle through the `SchedulerState` enum.
+The SchedulerPlugin implements a sophisticated state machine that manages the entire plugin scheduling life cycle through the `SchedulerState` enum.
 
 ### State Categories and Relationships
 
 The scheduler's states can be organized into four functional categories:
 
 #### 1. Initialization States
-- **UNINITIALIZED**: Initial moonsState before the plugin is ready
+- **UNINITIALIZED**: Initial state before the plugin is ready
 - **INITIALIZING**: Loading required dependencies and preparing to run
 - **READY**: Fully initialized and waiting for user activation
 
@@ -286,7 +286,7 @@ The scheduler's states can be organized into four functional categories:
 
 | State | Description | Entry Conditions | Exit Conditions | Helper Methods |
 |-------|-------------|------------------|-----------------|----------------|
-| UNINITIALIZED | Default moonsState when plugin is loaded but not ready | Initial moonsState | Transitions to INITIALIZING when plugin starts | isInitializing() |
+| UNINITIALIZED | Default state when plugin is loaded but not ready | Initial state | Transitions to INITIALIZING when plugin starts | isInitializing() |
 | INITIALIZING | Loading required plugins and setting up | From UNINITIALIZED on startup | Transitions to READY when dependencies are loaded | isInitializing() |
 | READY | Ready but not actively scheduling | After successful initialization | Transitions to SCHEDULING when user activates scheduler | !isSchedulerActive() |
 | SCHEDULING | Actively monitoring for plugins to run | From READY when activated, or after breaks/waiting | To WAITING states or STARTING_PLUGIN | isSchedulerActive(), isWaiting() |
@@ -339,7 +339,7 @@ public boolean isWaiting() {
             this == SchedulerState.PLAYSCHEDULE_BREAK);
 }
 
-// Returns true if scheduler is in a break moonsState
+// Returns true if scheduler is in a break state
 public boolean isBreaking() {
     return (this == SchedulerState.BREAK || 
             this == SchedulerState.PLAYSCHEDULE_BREAK);
@@ -370,7 +370,7 @@ public boolean isInitializing() {
     priority = false
 )
 public class SchedulerPlugin extends Plugin {
-    // Dependencies, moonsState variables, configuration
+    // Dependencies, state variables, configuration
     // Methods for plugin lifecycle management and scheduling
 }
 ```
@@ -496,17 +496,17 @@ private PluginScheduleEntry selectPluginWeighted(List<PluginScheduleEntry> plugi
 
 ### State-Based Decision Making
 
-The scheduler uses the moonsState machine to make intelligent decisions about plugin execution, with different behavior based on the current moonsState:
+The scheduler uses the state machine to make intelligent decisions about plugin execution, with different behavior based on the current state:
 
 #### 1. State-Dependent UI Updates
-The UI reflects the current moonsState with appropriate colors and messages:
+The UI reflects the current state with appropriate colors and messages:
 - Active states (RUNNING_PLUGIN) show green indicators
 - Warning states (STOPPING_PLUGIN) show orange indicators
 - Error states show red indicators
 - Break states show blue indicators
 
 #### 2. State-Based Priority Handling
-The scheduler prioritizes actions differently based on the current moonsState:
+The scheduler prioritizes actions differently based on the current state:
 - During SCHEDULING, it evaluates which plugin should run next
 - During BREAK states, it calculates appropriate break durations
 - During WAITING states, it monitors for conditions to transition
@@ -517,7 +517,7 @@ Transitions between states have guards that ensure proper flow:
 - HARD_STOPPING_PLUGIN only follows SOFT_STOPPING_PLUGIN
 - STARTING_PLUGIN must precede RUNNING_PLUGIN
 
-This moonsState-based design creates a robust system that can handle complex scheduling scenarios while maintaining proper execution flow.
+This state-based design creates a robust system that can handle complex scheduling scenarios while maintaining proper execution flow.
 
 ### Seamless Integration with Core Systems
 
@@ -576,7 +576,7 @@ The scheduler manages the login process through a dedicated monitoring thread:
 
 ```java
 /**
- * Starts a thread to monitor login moonsState and process login when needed
+ * Starts a thread to monitor login state and process login when needed
  */
 private void startLoginMonitoringThread() {
     if (loginMonitor != null && loginMonitor.isAlive()) {
@@ -597,7 +597,7 @@ private void startLoginMonitoringThread() {
             // Wait a moment for the game client to be ready
             sleep(1000);
             
-            // Set moonsState to indicate login attempt is in progress
+            // Set state to indicate login attempt is in progress
             setState(SchedulerState.LOGIN);
             
             // Determine world selection logic
@@ -697,7 +697,7 @@ private void startStopMonitoringThread(boolean successfulRun) {
                         setEnabled(false);
                     }
                     
-                    // Reset stop moonsState
+                    // Reset stop state
                     stopInitiated = false;
                     hasStarted = false;
                     break;
@@ -718,7 +718,7 @@ private void startStopMonitoringThread(boolean successfulRun) {
 }
 ```
 
-This approach allows plugins to clean up resources and save moonsState during a soft stop, while ensuring they eventually stop even if unresponsive.
+This approach allows plugins to clean up resources and save state during a soft stop, while ensuring they eventually stop even if unresponsive.
 
 ### Comprehensive UI and User Experience
 
@@ -841,7 +841,7 @@ The play schedule controls when the scheduler is allowed to run plugins:
    - Randomization can be applied to window boundaries
 
 2. **Schedule Behavior**:
-   - Outside allowed hours: Scheduler enters PLAYSCHEDULE_BREAK moonsState
+   - Outside allowed hours: Scheduler enters PLAYSCHEDULE_BREAK state
    - Approaching end of window: Current plugin may be stopped
    - Beginning of window: Scheduler resumes normal operation
    - Window transitions: Can trigger login/logout actions
@@ -852,7 +852,7 @@ The scheduler integrates with the standalone BreakHandler plugin:
 
 1. **Coordination Mechanism**:
    - BreakHandler signals when breaks begin/end
-   - Scheduler respects BreakHandler's break moonsState
+   - Scheduler respects BreakHandler's break state
    - Login/logout settings synchronized between systems
    - Break statistics shared for consistent behavior
 
@@ -995,7 +995,7 @@ For optimal use of the Plugin Scheduler:
 
 2. **Use Appropriate Stop Conditions**:
    - Always include a time-based stop condition as a fallback
-   - Use game-moonsState conditions for more precise control
+   - Use game-state conditions for more precise control
    - Test conditions thoroughly before long-term use
 
 3. **Balance Random vs. Fixed Scheduling**:

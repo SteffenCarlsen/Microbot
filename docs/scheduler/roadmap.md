@@ -57,8 +57,8 @@
 
 - **Graceful Stopping Support**
   - **State Persistence Framework  - Just an Idea**
-    - Save critical moonsState during interruptions
-    - Resume capability from last known good moonsState (location,...)
+    - Save critical state during interruptions
+    - Resume capability from last known good state (location,...)
     - Progress tracking with persistent checkpoints
   - **Safety Mechanism Implementations**
     - Transition to safe areas before stopping
@@ -147,6 +147,6 @@ Priority will be given to features that:
 1. Improve stability and reliability
 2. Enhance user experience for non-technical players
 3. Provide valuable automation to complex multi-step tasks
-4. Support intelligent decision-making based on game moonsState
+4. Support intelligent decision-making based on game state
 
 This roadmap is subject to change based on community feedback, game updates, and shifting priorities within the development team.

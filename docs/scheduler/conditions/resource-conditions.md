@@ -100,7 +100,7 @@ All resource conditions implement the `ResourceCondition` interface, which exten
 
 ## Using Resource Conditions as Start Conditions
 
-When used as start conditions, resource conditions can trigger plugins based on inventory moonsState or gathered resources:
+When used as start conditions, resource conditions can trigger plugins based on inventory state or gathered resources:
 
 ```java
 PluginScheduleEntry entry = new PluginScheduleEntry("MyPlugin", true);
@@ -174,4 +174,4 @@ Resource conditions integrate with the RuneLite event system to track changes in
 - `ItemContainerChanged`: Updates inventory item counts
 - `ItemSpawned`/`ItemDespawned`: Monitors ground items for looting
 - `MenuOptionClicked`: Detects item processing actions
-- `GameTick`: Periodically validates condition moonsState
+- `GameTick`: Periodically validates condition state

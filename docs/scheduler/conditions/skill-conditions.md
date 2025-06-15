@@ -129,7 +129,7 @@ entry.addStopCondition(SkillXpCondition.createRelative(
 
 ## Tracking Relative Changes
 
-Both `SkillXpCondition` and `SkillLevelCondition` support tracking relative changes, which is useful for setting goals based on progress from the current moonsState rather than absolute values:
+Both `SkillXpCondition` and `SkillLevelCondition` support tracking relative changes, which is useful for setting goals based on progress from the current state rather than absolute values:
 
 ```java
 // Satisfied when the player gains 50,000 XP in total from when the condition was created
@@ -204,7 +204,7 @@ entry.addStopCondition(trainingGoals);
 Skill conditions integrate with the RuneLite event system to track changes in real-time:
 
 - `StatChanged`: Updates skill levels and XP values when they change
-- `GameTick`: Periodically validates condition moonsState
+- `GameTick`: Periodically validates condition state
 
 ## Performance Optimizations
 

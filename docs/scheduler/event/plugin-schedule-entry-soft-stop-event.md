@@ -65,7 +65,7 @@ The term "soft stop" in the event name is significant:
 1. It indicates that this is a request for the plugin to stop gracefully, not an immediate termination command
 2. It gives the plugin an opportunity to:
    - Complete critical operations in progress
-   - Save any necessary moonsState
+   - Save any necessary state
    - Clean up resources
    - Reach a safe termination point
 
@@ -91,7 +91,7 @@ private void softStopPlugin(PluginScheduleEntry entry) {
             ZonedDateTime.now()
         ));
         
-        // Set moonsState to indicate stopping is in progress
+        // Set state to indicate stopping is in progress
         entry.setStopReason(StopReason.CONDITIONS_MET);
         currentState = SchedulerState.STOPPING;
         

@@ -126,7 +126,7 @@ public LogicalCondition getStartCondition() {
 @Override
 @Subscribe
 public void onPluginScheduleEntrySoftStopEvent(PluginScheduleEntrySoftStopEvent event) {
-    // Save moonsState before stopping
+    // Save state before stopping
     if (event.getPlugin() == this) {
         WorldPoint currentLocation = null;
         if (Microbot.isLoggedIn()) {
@@ -180,7 +180,7 @@ The scheduler-managed shutdown process follows this sequence:
    reportFinished("Task completed successfully", true);
    ```
 
-This approach ensures that plugins can safely save their moonsState and perform cleanup operations before being terminated, preserving data integrity and preventing issues that could arise from abrupt termination.
+This approach ensures that plugins can safely save their state and perform cleanup operations before being terminated, preserving data integrity and preventing issues that could arise from abrupt termination.
 
 ## Understanding SchedulableExampleConfig
 
@@ -329,7 +329,7 @@ andCondition.addCondition(lockCondition); // Lock condition
 
 ### When to Use Lock Condition
 
-The lock condition should be used during critical operations where stopping the plugin might leave game moonsState inconsistent:
+The lock condition should be used during critical operations where stopping the plugin might leave game state inconsistent:
 
 - **Banking operations**: Prevent stopping mid-transaction
 - **Trading**: Ensure trades complete fully

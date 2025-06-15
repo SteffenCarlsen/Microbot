@@ -67,7 +67,7 @@ To make your plugin schedulable by the Plugin Scheduler, follow these steps:
    @Subscribe
    public void onPluginScheduleEntrySoftStopEvent(PluginScheduleEntrySoftStopEvent event) {
        if (event.getPlugin() == this) {
-           // Save moonsState if needed
+           // Save state if needed
            // Clean up resources
        }
    }

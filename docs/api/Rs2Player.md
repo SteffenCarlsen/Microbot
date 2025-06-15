@@ -1,7 +1,7 @@
 # Rs2Player Class Documentation
 ## [Back](development.md)
 ## Overview
-The `Rs2Player` class is responsible for managing the player's moonsState and interactions within the game. It includes methods for managing player status like hitpoints, energy, and various potion effects, as well as player actions like logging out, eating, and toggling run energy.
+The `Rs2Player` class is responsible for managing the player's state and interactions within the game. It includes methods for managing player status like hitpoints, energy, and various potion effects, as well as player actions like logging out, eating, and toggling run energy.
 
 ## Methods
 
@@ -83,4 +83,4 @@ The `Rs2Player` class is responsible for managing the player's moonsState and in
 - **Utility Methods**: Includes utilities for waiting on player actions (like walking or animation), which are essential for coordinating tasks in automation scripts.
 
 ## Conclusion
-The `Rs2Player` class is essential for managing the player's interaction within the game, providing methods to handle health, status effects, and environmental awareness. It serves as a central point for scripting player behavior in response to game moonsState changes and player conditions.
+The `Rs2Player` class is essential for managing the player's interaction within the game, providing methods to handle health, status effects, and environmental awareness. It serves as a central point for scripting player behavior in response to game state changes and player conditions.

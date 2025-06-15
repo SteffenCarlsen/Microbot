@@ -42,7 +42,7 @@ The `Rs2Magic` class facilitates magic-related operations in the Microbot client
 ## Static Members
 
 ### `sleepUntil`
-- **Description**: Utility method that pauses execution until a condition becomes true, used to synchronize moonsState changes like tab switches.
+- **Description**: Utility method that pauses execution until a condition becomes true, used to synchronize state changes like tab switches.
 
 ### `alch`
 - **Description**: Helper method to perform the actual alchemy process on an item.

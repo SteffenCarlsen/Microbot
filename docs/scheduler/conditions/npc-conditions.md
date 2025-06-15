@@ -4,13 +4,13 @@ NPC conditions in the Plugin Scheduler system allow plugins to be controlled bas
 
 ## Overview
 
-NPC conditions monitor interactions with Non-Player Characters in the game, enabling plugins to respond to NPC presence, combat moonsState, and other NPC-related factors. These conditions are particularly useful for combat automation, quest helpers, and NPC interaction scripts.
+NPC conditions monitor interactions with Non-Player Characters in the game, enabling plugins to respond to NPC presence, combat state, and other NPC-related factors. These conditions are particularly useful for combat automation, quest helpers, and NPC interaction scripts.
 
 ## Available NPC Conditions
 
 ### NpcCondition
 
-The `NpcCondition` monitors the presence, proximity, or moonsState of specific NPCs in the game.
+The `NpcCondition` monitors the presence, proximity, or state of specific NPCs in the game.
 
 **Usage:**
 ```java
@@ -25,21 +25,21 @@ NpcCondition condition = new NpcCondition(
 - Monitors for specific NPC IDs or name patterns
 - Can check for NPC presence or absence
 - Can validate distance to the NPC
-- Supports combat moonsState checking (in combat, health percentage)
-- Updates dynamically as NPCs spawn, despawn, or change moonsState
+- Supports combat state checking (in combat, health percentage)
+- Updates dynamically as NPCs spawn, despawn, or change state
 
 ## Common Features of NPC Conditions
 
 All NPC conditions provide core functionality for NPC-based checks:
 
-- `isSatisfied()`: Determines if the current NPC moonsState satisfies the condition
+- `isSatisfied()`: Determines if the current NPC state satisfies the condition
 - `getDescription()`: Returns a human-readable description of the NPC condition
 - `reset()`: Refreshes any cached NPC data
 - Various configuration options for specifying which NPCs to monitor and what states to check
 
 ## Using NPC Conditions as Start Conditions
 
-When used as start conditions, NPC conditions can trigger plugins when specific NPCs appear or enter a certain moonsState:
+When used as start conditions, NPC conditions can trigger plugins when specific NPCs appear or enter a certain state:
 
 ```java
 PluginScheduleEntry entry = new PluginScheduleEntry("MyPlugin", true);
@@ -54,7 +54,7 @@ entry.addStartCondition(new NpcCondition(
 
 ## Using NPC Conditions as Stop Conditions
 
-NPC conditions are also valuable as stop conditions to deactivate plugins based on NPC moonsState:
+NPC conditions are also valuable as stop conditions to deactivate plugins based on NPC state:
 
 ```java
 // Stop the plugin when the target NPC dies or despawns
@@ -122,4 +122,4 @@ NPC conditions integrate with the RuneLite event system to track changes in real
 - `NpcChanged`: Detects when NPC properties or appearance changes
 - `InteractingChanged`: Detects when the player starts or stops interacting with an NPC
 - `HitsplatApplied`: Monitors damage dealt to NPCs
-- `GameTick`: Periodically validates NPC moonsState
+- `GameTick`: Periodically validates NPC state

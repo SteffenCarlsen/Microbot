@@ -2,7 +2,7 @@
 
 ## Overview
 
-The `PluginScheduleEntry` class is the core component of the Plugin Scheduler system, serving as the central data structure that connects plugins with their scheduling configuration. Each entry represents a scheduled plugin and encapsulates all the information needed to determine when a plugin should start and stop, as well as tracking its execution moonsState and history.
+The `PluginScheduleEntry` class is the core component of the Plugin Scheduler system, serving as the central data structure that connects plugins with their scheduling configuration. Each entry represents a scheduled plugin and encapsulates all the information needed to determine when a plugin should start and stop, as well as tracking its execution state and history.
 
 This class acts as the bridge between the scheduler orchestrator (`SchedulerPlugin`), the plugin API (`SchedulablePlugin`), and the user interface, managing both user-defined conditions and plugin-provided conditions through separate `ConditionManager` instances.
 
@@ -251,7 +251,7 @@ private void startStopMonitoringThread(boolean successfulRun) {
             while (stopInitiated && isMonitoringStop) {
                 // Check if plugin has stopped running
                 if (!isRunning()) {
-                    // Plugin has stopped, update moonsState and exit loop
+                    // Plugin has stopped, update state and exit loop
                     stopInitiated = false;
                     hasStarted = false;
                     // ...other cleanup...
@@ -575,7 +575,7 @@ public boolean start(boolean logConditions) {
         resetStopConditions();
     }
     
-    // Set moonsState and start the plugin
+    // Set state and start the plugin
     this.lastRunStartTime = ZonedDateTime.now();
     Microbot.startPlugin(plugin);
     return true;
@@ -674,7 +674,7 @@ while (stopInitiated && isMonitoringStop) {
 }
 ```
 
-The stop monitoring thread continuously checks if the plugin has stopped running and updates the moonsState once the stop is complete. If the plugin doesn't stop within the configured timeout, a hard stop may be initiated.
+The stop monitoring thread continuously checks if the plugin has stopped running and updates the state once the stop is complete. If the plugin doesn't stop within the configured timeout, a hard stop may be initiated.
 
 ### Hard Stop Fallback
 
@@ -687,7 +687,7 @@ private void hardStop(boolean successfulRun) {
     // Force stop the plugin
     Microbot.stopPlugin(plugin);
     
-    // Update moonsState
+    // Update state
     lastStopReasonType = StopReason.HARD_STOP;
     lastStopReason = "Plugin did not respond to soft stop and was forcibly terminated";
     stopInitiated = false;
@@ -728,10 +728,10 @@ The `PluginScheduleEntry` class works closely with the `SchedulerPlugin` class, 
 1. **SchedulerPlugin** manages a collection of `PluginScheduleEntry` instances
 2. It periodically checks each entry to determine if it should start or stop
 3. It handles the scheduling of breaks between plugin executions
-4. It manages the overall scheduler moonsState (IDLE, EXECUTING, STOPPING, etc.)
+4. It manages the overall scheduler state (IDLE, EXECUTING, STOPPING, etc.)
 5. It provides methods to add, remove, and configure scheduled plugins
 
-This separation of concerns allows the `PluginScheduleEntry` to focus on the moonsState and management of an individual plugin while the `SchedulerPlugin` handles the higher-level orchestration.
+This separation of concerns allows the `PluginScheduleEntry` to focus on the state and management of an individual plugin while the `SchedulerPlugin` handles the higher-level orchestration.
 
 ```java
 // In SchedulerPlugin:

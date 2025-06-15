@@ -172,4 +172,4 @@ The `PluginScheduleEntryFinishedEvent` works alongside other events in the sched
 
 - It differs from `PluginScheduleEntrySoftStopEvent`, which is sent by the scheduler to request that a plugin stop
 - It is typically used after the plugin has responded to a soft stop request or has independently determined it should stop
-- It provides feedback to the scheduler about the plugin's moonsState at the end of execution
+- It provides feedback to the scheduler about the plugin's state at the end of execution
