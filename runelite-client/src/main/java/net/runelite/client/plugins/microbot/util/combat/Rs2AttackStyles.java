@@ -6,10 +6,18 @@ import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.util.combat.AttackTypeHelpers.AttackType;
 import net.runelite.client.plugins.microbot.util.combat.AttackTypeHelpers.WeaponAttackType;
+import net.runelite.client.plugins.microbot.util.tabs.Rs2Tab;
+import net.runelite.client.plugins.microbot.util.widget.Rs2Widget;
 
 import java.util.Arrays;
 import java.util.Objects;
 
+/**
+ * Rs2AttackStyles is a utility class that provides methods to manage and retrieve attack styles
+ * based on the player's equipped weapon and current combat settings.
+ * It allows for setting the attack style, retrieving the current attack type, and getting available
+ * attack types for the currently equipped weapon.
+ */
 public class Rs2AttackStyles {
     /**
      * Retrieves the current attack type based on the player's equipped weapon and attack style.
@@ -35,6 +43,13 @@ public class Rs2AttackStyles {
         return getAttackTypesForCurrentWeapon(currentEquippedWeaponTypeVarbit);
     }
 
+    /**
+     * Sets the player's attack style to the specified AttackType.
+     * It checks if the specified attack type is valid for the currently equipped weapon.
+     *
+     * @param attackType The AttackType to set as the current attack style.
+     * @return true if the attack style was successfully set, false otherwise.
+     */
     public static boolean setAttackStyle(AttackType attackType) {
         final int currentEquippedWeaponTypeVarbit = Microbot.getVarbitValue(Varbits.EQUIPPED_WEAPON_TYPE);
         final AttackType[] attackTypes = getAttackTypesForCurrentWeapon(currentEquippedWeaponTypeVarbit);
@@ -44,6 +59,7 @@ public class Rs2AttackStyles {
         }
         for (int i = 0; i < attackTypes.length; i++) {
             if (Objects.equals(attackTypes[i].getName(), attackType.getName())) {
+                Rs2Tab.switchToCombatOptionsTab();
                 switch (i) {
                     case 0:
                         return Rs2Combat.setAttackStyle(WidgetInfo.COMBAT_STYLE_ONE);

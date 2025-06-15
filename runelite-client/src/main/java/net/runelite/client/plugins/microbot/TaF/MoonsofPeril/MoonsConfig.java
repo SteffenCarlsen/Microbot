@@ -85,10 +85,31 @@ public interface MoonsConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "useSpecialAttack",
+            name = "Blood moon special attacks?",
+            description = "use special attacks for the Blood Moon boss",
+            position = 3,
+            section = generalSettings
+    )
+    default boolean useSpecialAttack() {
+        return false;
+    }
+    @ConfigItem(
+            keyName = "bloodMoonSpecialWeapon",
+            name = "Blood moon special weapon",
+            description = "Slash special weapon",
+            position = 4,
+            section = generalSettings
+    )
+    default String bloodMoonSpecialWeapon() {
+        return "";
+    }
+
+    @ConfigItem(
             keyName = "crushWeapon",
             name = "Crush weapon",
             description = "Crush weapon",
-            position = 3,
+            position = 5,
             section = generalSettings
     )
     default String crushWeapon() {
@@ -99,7 +120,7 @@ public interface MoonsConfig extends Config {
             keyName = "stabWeapon",
             name = "Stab weapon",
             description = "Stab weapon",
-            position = 4,
+            position = 6,
             section = generalSettings
     )
     default String stabWeapon() {
@@ -110,7 +131,7 @@ public interface MoonsConfig extends Config {
             keyName = "State",
             name = "State",
             description = "Choose state.",
-            position = 5,
+            position = 7,
             section = generalSettings
     )
     default MoonsState getState() {

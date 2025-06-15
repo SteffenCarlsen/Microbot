@@ -5,7 +5,6 @@ import net.runelite.api.NPC;
 import net.runelite.api.Skill;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.widgets.Widget;
-import net.runelite.api.widgets.WidgetInfo;
 import net.runelite.client.plugins.microbot.Microbot;
 import net.runelite.client.plugins.microbot.Script;
 import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.BossToKill;
@@ -19,6 +18,7 @@ import net.runelite.client.plugins.microbot.util.combat.Rs2Combat;
 import net.runelite.client.plugins.microbot.util.equipment.Rs2Equipment;
 import net.runelite.client.plugins.microbot.util.gameobject.Rs2GameObject;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
+import net.runelite.client.plugins.microbot.util.misc.SpecialAttackWeaponEnum;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
 import net.runelite.client.plugins.microbot.util.npc.Rs2NpcModel;
 import net.runelite.client.plugins.microbot.util.player.Rs2Player;
@@ -133,20 +133,37 @@ public class MoonsScript extends Script {
         Rs2Prayer.toggleQuickPrayer(false);
     }
 
-    private static void handleBloodMoonBossFocus() {
+    private void handleBloodMoonBossFocus(MoonsConfig config) {
         if (!Rs2Player.isMoving() && !Rs2Player.isInteracting()) {
             var bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
-            int npcToAttack = (bloodJaguar == null) ? MoonsConstants.BLOOD_MOON_NPC_ID : MoonsConstants.BLOOD_JAGUAR_NPC_ID;
-            if (npcToAttack == MoonsConstants.BLOOD_MOON_NPC_ID && Rs2Combat.getSpecEnergy() >= 500) {
-                // if we want to, add special attack here
-                attackBoss("Blood moon");
-            } else if (npcToAttack == MoonsConstants.BLOOD_MOON_NPC_ID && Rs2Combat.getSpecEnergy() < 500) {
-                // equip normal weapon
-                attackBoss("Blood moon");
-            } else {
-                // attackBoss("Blood jaguar");
-                // Microbot.log("Attacking Blood Jaguar");
-                //sleep(600);
+            if (bloodJaguar == null) {
+                var bloodMoon = Rs2Npc.getNpc(MoonsConstants.BLOOD_MOON_NPC_ID);
+                if (bloodMoon != null && !bloodMoon.isDead()) {
+//                    var specEnergy = Rs2Combat.getSpecEnergy();
+//                    int healthPercentage = (bloodMoon.getHealthRatio() * 100) / bloodMoon.getHealthScale();
+//                    if (specEnergy > 500 && healthPercentage < 40 && config.useSpecialAttack()) {
+//                        var items = config.bloodMoonSpecialWeapon().trim().split(",");
+//                        for (var item : items) {
+//                            if (!Rs2Equipment.isWearing(item)) {
+//                                Rs2Inventory.wear(item);
+//                            }
+//                        }
+//                        if (!Rs2Equipment.isWearing(config.bloodMoonSpecialWeapon())) {
+//                            Rs2Inventory.wear(config.bloodMoonSpecialWeapon());
+//                            var specWeapon =  Arrays.stream(SpecialAttackWeaponEnum.values()).filter(x -> x.getName().equalsIgnoreCase(config.bloodMoonSpecialWeapon())).findFirst().orElse(null);
+//                            sleepUntil(() -> Rs2Equipment.isWearing(config.bloodMoonSpecialWeapon()), 1000);
+//                            var specEnergyRequired = (specWeapon == null) ? 500 : specWeapon.getEnergyRequired();
+//                            Rs2Combat.setSpecState(true, specEnergyRequired);
+//                            sleepUntil(Rs2Combat::getSpecState, 1000);
+//                            Rs2Npc.attack(bloodMoon);
+//                        }
+//                    } else {
+//                        handleEquipment(config, BossToKill.BLOOD);
+//                    }
+                    if (Rs2Player.getWorldLocation().distanceTo(bloodMoon.getWorldLocation()) < 5) {
+                        Rs2Npc.attack(bloodMoon);
+                    }
+                }
             }
         }
     }
@@ -175,6 +192,9 @@ public class MoonsScript extends Script {
     }
 
     private static void handleFloorTileNormally(List<WorldPoint> safeCircles, WorldPoint playerLocation, WorldPoint floorTileLocation) {
+        if (Rs2Player.isMoving()) {
+            return;
+        }
         if (floorTileLocation != null) {
             WorldPoint closestTile = safeCircles.stream()
                     .min(Comparator.comparingDouble(tile -> tile.distanceTo2D(floorTileLocation)))
@@ -248,13 +268,12 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case FIGHTING_BLOOD_MOON:
-                        handleAttackStyle(BossToKill.BLOOD);
                         handleBloodJaguar();
                         handleFloorSafeSpot(playerLocation, BossToKill.BLOOD);
                         handleBloodspotSpecials(playerLocation);
                         ConsumePotionsAndFood(config, currentTime);
                         handlePrayer();
-                        handleBloodMoonBossFocus();
+                        handleBloodMoonBossFocus(config);
                         var bossKilledAtBlood = MoonsHelpers.getBossesKilled();
                         if (bossKilledAtBlood.contains(BossToKill.BLOOD)) {
                             moonsState = MoonsState.DEFAULT;
@@ -272,7 +291,6 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case FIGHTING_BLUE_MOON:
-                        handleAttackStyle(BossToKill.MOON);
                         handleWeaponFreeze();
                         handleFrostStorm();
                         handleFloorSafeSpot(playerLocation, BossToKill.MOON);
@@ -296,7 +314,6 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case FIGHTING_ECLIPSE:
-                        handleAttackStyle(BossToKill.ECLIPSE);
                         handleShield();
                         handleClones();
                         handleFloorSafeSpot(playerLocation, BossToKill.ECLIPSE);
@@ -351,7 +368,7 @@ public class MoonsScript extends Script {
                 Microbot.log("Error: " + e);
                 e.printStackTrace();
             }
-        }, 0, 100, TimeUnit.MILLISECONDS);
+        }, 0, 1, TimeUnit.MILLISECONDS);
         return true;
     }
 
@@ -367,7 +384,7 @@ public class MoonsScript extends Script {
                 var equipmentToWearCrush = equipment.trim().split(",");
                 for (String item : equipmentToWearCrush) {
                     if (!Rs2Equipment.isWearing(item)) {
-                        Rs2Equipment.interact(item, "Wield");
+                        Rs2Inventory.wear(item);
                     }
                 }
             }
@@ -378,7 +395,7 @@ public class MoonsScript extends Script {
                 var equipmentToWearCrush = equipment.trim().split(",");
                 for (String item : equipmentToWearCrush) {
                     if (!Rs2Equipment.isWearing(item)) {
-                        Rs2Equipment.interact(item, "Wield");
+                        Rs2Inventory.wear(item);
                     }
                 }
             }
@@ -389,11 +406,12 @@ public class MoonsScript extends Script {
                 var equipmentToWearSlash = equipment.trim().split(",");
                 for (String item : equipmentToWearSlash) {
                     if (!Rs2Equipment.isWearing(item)) {
-                        Rs2Equipment.interact(item, "Wield");
+                        Rs2Inventory.wear(item);
                     }
                 }
             }
         }
+        sleep(1200);
     }
 
     private void healAndPrayWhenGettingSupplies(MoonsConfig config, long currentTime) {
@@ -455,9 +473,17 @@ public class MoonsScript extends Script {
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
         if (floorTileNPC != null) {
             Microbot.log("Safe tile found, prioritizing safe tile over shield");
-            Rs2Walker.walkTo(floorTileNPC.getWorldLocation());
+            Rs2Walker.walkFastCanvas(floorTileNPC.getWorldLocation());
             return;
         }
+
+        // TODO FIX X COORDINATE
+        /*if (shieldLocation.getY() == 9637 && shieldLocation.getX() < 1400) {
+             Rs2Walker.walkTo(new WorldPoint(shieldLocation.getX() + 2, 9638, 0));
+             return;
+        } else if (shieldLocation.getY() == 9626 && shieldLocation.getX() > 1400) {
+
+        }*/
 
         // Get Eclipse boss location (center of rotation)
         var eclipseNpc = Rs2Npc.getNpc(MoonsConstants.ECLIPSE_NPC_ID);
@@ -468,57 +494,35 @@ public class MoonsScript extends Script {
         WorldPoint centerPoint = eclipseNpc.getWorldLocation();
         WorldPoint playerLocation = Rs2Player.getWorldLocation();
 
-        // Calculate shield's position relative to center
-        int relX = shieldLocation.getX() - centerPoint.getX();
-        int relY = shieldLocation.getY() - centerPoint.getY();
+        // Calculate vector from center to shield
+        double vectorX = shieldLocation.getX() - centerPoint.getX();
+        double vectorY = shieldLocation.getY() - centerPoint.getY();
 
-        // Determine shield's movement direction based on its position
-        int dirX = 0;
-        int dirY = 0;
+        // Calculate distance from center to shield
+        double distanceFromCenter = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
 
-        // Top edge - moving right
-        if (relY > 0 && Math.abs(relY) > Math.abs(relX)) {
-            dirX = 1;
-            dirY = 0;
-        }
-        // Right edge - moving down
-        else if (relX > 0 && Math.abs(relX) >= Math.abs(relY)) {
-            dirX = 0;
-            dirY = -1;
-        }
-        // Bottom edge - moving left
-        else if (relY < 0 && Math.abs(relY) >= Math.abs(relX)) {
-            dirX = -1;
-            dirY = 0;
-        }
-        // Left edge - moving up
-        else if (relX < 0 && Math.abs(relX) > Math.abs(relY)) {
-            dirX = 0;
-            dirY = 1;
-        }
 
-        // Calculate the vector from center to shield
-        double vectorX = relX;
-        double vectorY = relY;
+        // Calculate angle of shield relative to center (in radians)
+        double angle = Math.atan2(vectorY, vectorX);
 
-        // Normalize the vector
-        double length = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
-        if (length > 0) {
-            vectorX /= length;
-            vectorY /= length;
-        }
+        // Add a small amount to the angle to position ahead of the shield in its rotation direction
+        // Clockwise rotation means we subtract from the angle
+        double adjustedAngle = angle - 0.4;  // Adjust this value as needed
 
-        // Position 1 tile OUTSIDE the shield (away from center)
-        // and 2 tiles AHEAD of the shield's movement (increased from 1)
-        int targetX = shieldLocation.getX() + (int)Math.round(vectorX) + (dirX * 2);
-        int targetY = shieldLocation.getY() + (int)Math.round(vectorY) + (dirY * 2);
+        // Recalculate vector using the adjusted angle
+        double newVectorX = Math.cos(adjustedAngle) * distanceFromCenter;
+        double newVectorY = Math.sin(adjustedAngle) * distanceFromCenter;
+
+        // Create a position 2 tiles ahead in the shield's path
+        int targetX = centerPoint.getX() + (int)Math.round(newVectorX);
+        int targetY = centerPoint.getY() + (int)Math.round(newVectorY);
 
         WorldPoint targetPosition = new WorldPoint(targetX, targetY, shieldLocation.getPlane());
 
-        // Only move if not already at target position
+        // Only move if not already at target position or very close to it
         if (playerLocation.distanceTo(targetPosition) > 0) {
             Rs2Walker.walkFastCanvas(targetPosition);
-            Microbot.log("Following shield: Moving outside and 2 tiles ahead of shield");
+            Microbot.log("Following shield: Staying ahead in shield's path, shieldposition: " + shieldLocation + ", target position: " + targetPosition);
         }
     }
 
@@ -550,6 +554,10 @@ public class MoonsScript extends Script {
             var blueMoon = Rs2Npc.getNpc(MoonsConstants.BLUE_MOON_NPC_ID);
             if (blueMoon != null) {
                 if (!blueMoon.isDead()) {
+                    var braziers = Rs2GameObject.getGameObjects(x -> MoonsConstants.BRAZIER_IDS.contains(x.getId()) && Rs2GameObject.hasAction(Rs2GameObject.convertToObjectComposition(x), "Light"));
+                    if (braziers != null && !braziers.isEmpty()) {
+                        return;
+                    }
                     Rs2Npc.attack(blueMoon);
                 }
             }
@@ -567,21 +575,16 @@ public class MoonsScript extends Script {
                     .min(Comparator.comparingDouble(b -> b.getWorldLocation().distanceTo(Rs2Player.getWorldLocation())))
                     .orElse(null);
             if (Rs2Player.isInteracting() || Rs2Player.isMoving()) {
-                if (Rs2Player.isInteracting()) {
-                    Microbot.log("Exiting due to interacting with an object.");
-                }
-                if (Rs2Player.isMoving()) {
-                    Microbot.log("Exiting due to player movement.");
-                }
                 return;
             }
             if (closestBrazier != null) {
                 Rs2GameObject.interact(closestBrazier, "Light");
+                return;
             }
-            return;
         }
         try {
             WorldPoint playerLocation = Rs2Player.getWorldLocation();
+            Rs2Walker.walkFastCanvas(new WorldPoint(1440, 9675, 0));
             handleFloorTileNormally(blueMoonSafeCircles, playerLocation, new WorldPoint(1440, 9675, 0));
         } catch (Exception e) {
             Microbot.log("Error handling frost storm safe spots: " + e.getMessage());
@@ -605,7 +608,7 @@ public class MoonsScript extends Script {
 
         List<WorldPoint> dangerousWorldPoints = Rs2Tile.getDangerousGraphicsObjectTiles()
                 .stream()
-                .filter(x -> x.getValue() < 1200)
+                .filter(x -> x.getValue() < 800)
                 .map(Pair::getKey)
                 .collect(Collectors.toList());
 
@@ -622,63 +625,9 @@ public class MoonsScript extends Script {
         }
 
         if (Rs2Player.isMoving() || Rs2Player.isInteracting()) {
-            Microbot.log("Exiting due to player movement or interaction.");
             return;
         }
         Rs2Npc.attack(correctAnimatingNpc);
-    }
-
-    private void handleAttackStyle(BossToKill bossToKill) {
-        return;
-//        var current = Rs2Combat.getWeaponAttackStyle();
-//        if (current == null || current.isBlank() || current.equals("None") || current.equals("Punch")) {
-//            return;
-//        }
-//        switch (bossToKill) {
-//            case BLOOD:
-//                if (!Objects.equals(current, "Slash")) {
-//                    attemptStyleSwitch("Slash");
-//                }
-//                break;
-//            case MOON:
-//                if (!Objects.equals(current, "Crush")) {
-//                    attemptStyleSwitch("Crush");
-//                }
-//                break;
-//            case ECLIPSE:
-//                if (!Objects.equals(current, "Stab")) {
-//                    attemptStyleSwitch("Stab");
-//                }
-//                break;
-//        }
-    }
-
-    private void attemptStyleSwitch(String style) {
-        if (attempts < 3 && Rs2Combat.setAttackStyle(WidgetInfo.COMBAT_STYLE_ONE)) {
-            if (Rs2Combat.getWeaponAttackStyle().equals(style)) {
-                attempts = 0; // Reset attempts if successful
-            } else {
-                attempts++;
-            }
-        } else if (attempts < 3 && Rs2Combat.setAttackStyle(WidgetInfo.COMBAT_STYLE_TWO)) {
-            if (Rs2Combat.getWeaponAttackStyle().equals(style)) {
-                attempts = 0; // Reset attempts if successful
-            } else {
-                attempts++;
-            }
-        } else if (attempts < 3 && Rs2Combat.setAttackStyle(WidgetInfo.COMBAT_STYLE_THREE)) {
-            if (Rs2Combat.getWeaponAttackStyle().equals(style)) {
-                attempts = 0; // Reset attempts if successful
-            } else {
-                attempts++;
-            }
-        } else if (attempts < 3 && Rs2Combat.setAttackStyle(WidgetInfo.COMBAT_STYLE_THREE)) {
-            if (Rs2Combat.getWeaponAttackStyle().equals(style)) {
-                attempts = 0; // Reset attempts if successful
-            } else {
-                attempts++;
-            }
-        }
     }
 
     private BossToKill getBossToKill(MoonsConfig config) {
@@ -713,6 +662,7 @@ public class MoonsScript extends Script {
             bloodJaguar = Rs2Npc.getNpc("Blood Jaguar");
             if (bloodJaguar != null) {
                 Microbot.log("Blood Jaguar found, but no safe tile available.");
+                return;
             }
             if (floorTileLocation == null) {
                 if (!npcs.isEmpty()) {
@@ -722,6 +672,10 @@ public class MoonsScript extends Script {
             return;
         }
 
+//        if (!Rs2Combat.inCombat() && !Rs2Player.isMoving()) {
+//            handleFloorTileNormally(bloodMoonSafeCircles, Rs2Player.getWorldLocation(), floorTileLocation);
+//            return;
+//        }
         WorldPoint playerLocation = Rs2Player.getWorldLocation();
         WorldPoint jaguarLocation = bloodJaguar.getWorldLocation();
 
@@ -764,13 +718,52 @@ public class MoonsScript extends Script {
             if (Rs2Player.eatAt(80)) {
                 Microbot.log("Eating at 80% health to avoid healing in attack phase");
             }
+
+            // Get the Blood Moon boss location (center of the room)
+            var bloodMoonNpc = Rs2Npc.getNpc(MoonsConstants.BLOOD_MOON_NPC_ID);
+            WorldPoint centerPoint = new WorldPoint(1392, 9632, 0);
+
+            // Move to a safe tile near center if standing on a bloodspot
             if (bloodSpotsWorldPoints.contains(playerLocation)) {
-                final WorldPoint safeTile = findSafeTile(playerLocation, bloodSpotsWorldPoints);
+                final WorldPoint safeTile = findSafeTileNearCenter(playerLocation, bloodSpotsWorldPoints, centerPoint);
                 if (safeTile != null) {
                     Rs2Walker.walkFastCanvas(safeTile);
+                    Microbot.log("Moving to safe tile near center");
+                }
+            }
+            // Optionally move closer to center if too far away (>5 tiles)
+            else if (playerLocation.distanceTo(centerPoint) > 5 && !Rs2Player.isMoving()) {
+                final WorldPoint safeTile = findSafeTileNearCenter(playerLocation, bloodSpotsWorldPoints, centerPoint);
+                if (safeTile != null && safeTile.distanceTo(centerPoint) < playerLocation.distanceTo(centerPoint)) {
+                    Rs2Walker.walkFastCanvas(safeTile);
+                    Microbot.log("Moving closer to center of room");
                 }
             }
         }
+    }
+
+    // Add this new method to find safe tiles that are close to the center
+    private WorldPoint findSafeTileNearCenter(WorldPoint playerLocation, List<WorldPoint> dangerousWorldPoints, WorldPoint centerPoint) {
+        List<WorldPoint> nearbyTiles = List.of(
+                new WorldPoint(playerLocation.getX() + 1, playerLocation.getY(), playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX() - 1, playerLocation.getY(), playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX(), playerLocation.getY() + 1, playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX(), playerLocation.getY() - 1, playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX() - 1, playerLocation.getY() + 1, playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX() - 1, playerLocation.getY() - 1, playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX() + 1, playerLocation.getY() - 1, playerLocation.getPlane()),
+                new WorldPoint(playerLocation.getX() + 1, playerLocation.getY() + 1, playerLocation.getPlane())
+        );
+
+        // Filter to only safe tiles
+        List<WorldPoint> safeTiles = nearbyTiles.stream()
+                .filter(tile -> !dangerousWorldPoints.contains(tile))
+                .collect(Collectors.toList());
+
+        // Return the safe tile closest to center
+        return safeTiles.stream()
+                .min(Comparator.comparingDouble(tile -> tile.distanceTo(centerPoint)))
+                .orElse(null);
     }
 
     private void handleSupplies(MoonsConfig config) {
@@ -880,6 +873,9 @@ public class MoonsScript extends Script {
     }
 
     private void collectGrubs() {
+        if (Rs2Inventory.isFull()) {
+            Rs2Inventory.drop(MoonsConstants.RAW_FOOD_ID);
+        }
         Rs2GameObject.interact(MoonsConstants.GRUB_HERBLORE_ID, "Collect-from");
     }
 

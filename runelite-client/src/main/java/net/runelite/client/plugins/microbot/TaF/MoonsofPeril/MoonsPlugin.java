@@ -143,6 +143,11 @@ public class MoonsPlugin extends Plugin {
                                         playerLocation.distanceTo(closestTile) <= 0) {
                                     Rs2Npc.attack(bloodJaguar);
                                 }
+                            } else {
+                                // If we're already on the safe tile, just attack the jaguar
+                                if (bloodJaguar != null && !bloodJaguar.isDead()) {
+                                    Rs2Npc.attack(bloodJaguar);
+                                }
                             }
                         } catch (Exception e) {
                             Microbot.log("Error while trying to attack Blood Jaguar: " + e.getMessage());
@@ -175,10 +180,6 @@ public class MoonsPlugin extends Plugin {
                 } else {
                     eclipseNpcs.clear();
                 }
-                // Remove expired dangerous graphics object tiles
-                if (dangerousGraphicsObjectTiles.isEmpty()) {
-                    return;
-                }
 
                 for (MutablePair<WorldPoint, Integer> dangerousTile : dangerousGraphicsObjectTiles) {
                     dangerousTile.setValue(dangerousTile.getValue() - 600);
@@ -193,8 +194,8 @@ public class MoonsPlugin extends Plugin {
     public void onGameObjectSpawned(GameObjectSpawned event) {
         final var groundObject = event.getGameObject();
         if (groundObject.getId() == 51046) {
-            final var tile = groundObject.getWorldLocation();
-            dangerousGraphicsObjectTiles.add(new MutablePair<>(tile, (4) * 600));
+            //final var tile = groundObject.getWorldLocation();
+            //dangerousGraphicsObjectTiles.add(new MutablePair<>(tile, (4) * 600));
             Rs2Tile.addDangerousGameObjectTile(groundObject, (4) * 600);
 
             // Record the tick when blood special spawns
