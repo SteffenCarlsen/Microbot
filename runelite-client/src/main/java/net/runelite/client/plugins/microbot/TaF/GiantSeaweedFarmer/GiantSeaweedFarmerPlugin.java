@@ -53,6 +53,7 @@ public class GiantSeaweedFarmerPlugin extends Plugin implements SchedulablePlugi
     protected void shutDown() {
         giantSeaweedFarmerScript.shutdown();
         overlayManager.remove(giantSeaweedFarmerOverlay);
+        Microbot.stopPlugin(this);
     }
 
     @Provides

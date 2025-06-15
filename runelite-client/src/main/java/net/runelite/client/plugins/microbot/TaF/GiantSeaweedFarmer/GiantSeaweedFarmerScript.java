@@ -119,6 +119,7 @@ public class GiantSeaweedFarmerScript extends Script {
         Rs2Bank.withdrawX("seaweed spore", 2);
         Rs2Bank.withdrawAndEquip("Fishbowl helmet");
         Rs2Bank.withdrawAndEquip("Diving apparatus");
+        Rs2Bank.withdrawAndEquip("Flippers");
         Rs2Bank.withdrawOne("seed dibber");
         Rs2Bank.withdrawOne("rake");
         Rs2Bank.withdrawOne("spade");
