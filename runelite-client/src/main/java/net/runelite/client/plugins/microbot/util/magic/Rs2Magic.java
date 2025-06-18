@@ -14,7 +14,7 @@ import net.runelite.client.plugins.microbot.util.dialogues.Rs2Dialogue;
 import net.runelite.client.plugins.microbot.util.equipment.Rs2Equipment;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2Inventory;
 import net.runelite.client.plugins.microbot.util.inventory.Rs2ItemModel;
-import net.runelite.client.plugins.microbot.util.inventory.RunePouch;
+import net.runelite.client.plugins.microbot.util.inventory.Rs2RunePouch;
 import net.runelite.client.plugins.microbot.util.keyboard.Rs2Keyboard;
 import net.runelite.client.plugins.microbot.util.math.Rs2Random;
 import net.runelite.client.plugins.microbot.util.menu.NewMenuEntry;
@@ -48,10 +48,10 @@ public class Rs2Magic {
      * Check if all the settings are correct before we start interacting with spellbook
      */
     public static boolean oneTimeSpellBookCheck() {
-        if (Rs2Player.isInTutorialIsland())
+        if (!Rs2Player.hasCompletedTutorialIsland())
             return true;
         // We add a one time check to avoid performanec issues. Checking varbits is expensive
-        if (firstInteractionWithSpellBook && !Rs2SpellBookSettings.setAllFiltersOn()) {
+        if (firstInteractionWithSpellBook && !Rs2SpellBookSettings.configureSpellbookSettings()) {
             return false;
         }
         firstInteractionWithSpellBook = false;
@@ -505,7 +505,7 @@ public class Rs2Magic {
 
         // Optionally add runes from the rune pouch
         if (checkRunePouch) {
-            RunePouch.getRunes().forEach((runeId, quantity) -> {
+            Rs2RunePouch.getRunes().forEach((runeId, quantity) -> {
                 Arrays.stream(Runes.values())
                         .filter(r -> r.getItemId() == runeId)
                         .findFirst()
@@ -578,7 +578,7 @@ public class Rs2Magic {
 
         // Gather runes from the rune pouch
         if (hasRunePouch) {
-            RunePouch.getRunes().forEach((runeId, quantity) -> {
+            Rs2RunePouch.getRunes().forEach((runeId, quantity) -> {
                 Arrays.stream(Runes.values())
                         .filter(r -> r.getItemId() == runeId)
                         .findFirst()
@@ -693,7 +693,7 @@ public class Rs2Magic {
 
         // Optionally add runes from the rune pouch
         if (checkRunePouch) {
-            RunePouch.getRunes().forEach((runeId, quantity) -> {
+            Rs2RunePouch.getRunes().forEach((runeId, quantity) -> {
                 Arrays.stream(Runes.values())
                         .filter(r -> r.getItemId() == runeId)
                         .findFirst()
@@ -766,7 +766,7 @@ public class Rs2Magic {
 
         // Collect runes from the rune pouch if we have it in inventory
         if (hasRunePouch) {
-            RunePouch.getRunes().forEach((runeId, quantity) -> {
+            Rs2RunePouch.getRunes().forEach((runeId, quantity) -> {
                 Arrays.stream(Runes.values())
                         .filter(r -> r.getItemId() == runeId)
                         .findFirst()
