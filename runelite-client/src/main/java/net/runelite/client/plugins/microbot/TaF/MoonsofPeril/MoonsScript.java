@@ -134,41 +134,126 @@ public class MoonsScript extends Script {
     }
 
     private void handleBloodMoonBossFocus(MoonsConfig config) {
-        if (!Rs2Player.isMoving() && !Rs2Player.isInteracting()) {
-            var bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
-            if (bloodJaguar == null) {
-                var bloodMoon = Rs2Npc.getNpc(MoonsConstants.BLOOD_MOON_NPC_ID);
-                if (bloodMoon != null && !bloodMoon.isDead()) {
-//                    var specEnergy = Rs2Combat.getSpecEnergy();
-//                    int healthPercentage = (bloodMoon.getHealthRatio() * 100) / bloodMoon.getHealthScale();
-//                    if (specEnergy > 500 && healthPercentage < 40 && config.useSpecialAttack()) {
-//                        var items = config.bloodMoonSpecialWeapon().trim().split(",");
-//                        for (var item : items) {
-//                            if (!Rs2Equipment.isWearing(item)) {
-//                                Rs2Inventory.wear(item);
-//                            }
-//                        }
-//                        if (!Rs2Equipment.isWearing(config.bloodMoonSpecialWeapon())) {
-//                            Rs2Inventory.wear(config.bloodMoonSpecialWeapon());
-//                            var specWeapon =  Arrays.stream(SpecialAttackWeaponEnum.values()).filter(x -> x.getName().equalsIgnoreCase(config.bloodMoonSpecialWeapon())).findFirst().orElse(null);
-//                            sleepUntil(() -> Rs2Equipment.isWearing(config.bloodMoonSpecialWeapon()), 1000);
-//                            var specEnergyRequired = (specWeapon == null) ? 500 : specWeapon.getEnergyRequired();
-//                            Rs2Combat.setSpecState(true, specEnergyRequired);
-//                            sleepUntil(Rs2Combat::getSpecState, 1000);
-//                            Rs2Npc.attack(bloodMoon);
-//                        }
-//                    } else {
-//                        handleEquipment(config, BossToKill.BLOOD);
-//                    }
-                    if (Rs2Player.getWorldLocation().distanceTo(bloodMoon.getWorldLocation()) < 5) {
-                        Rs2Npc.attack(bloodMoon);
-                    }
-                }
-            }
+        if (Rs2Player.isMoving()) {
+            return;
+        }
+
+        var bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
+        if (bloodJaguar != null) {
+            return; // Don't attack blood moon when jaguar is present
+        }
+
+        var bloodMoon = Rs2Npc.getNpc(MoonsConstants.BLOOD_MOON_NPC_ID);
+        if (bloodMoon == null || bloodMoon.isDead()) {
+            return;
+        }
+
+        // Try to execute special attack first if conditions are right
+        if (executeBloodMoonSpecialAttack(config, bloodMoon)) {
+            return; // Special attack executed, nothing else to do
+        }
+
+        if (Rs2Player.isInteracting()) {
+            return;
+        }
+
+        // If special attack wasn't used, handle normal attacks
+        handleEquipment(config, BossToKill.BLOOD);
+
+        if (Rs2Player.getWorldLocation().distanceTo(bloodMoon.getWorldLocation()) < 5) {
+            Rs2Npc.attack(bloodMoon);
         }
     }
 
-    private static void handleFloorSafeSpot(WorldPoint playerLocation, BossToKill bossToKill) {
+    /**
+     * Handles special attack execution against Blood Moon with improved timing
+     *
+     * @param config The MoonsConfig containing settings
+     * @param bloodMoon The Blood Moon NPC target
+     * @return True if special attack was executed, false otherwise
+     */
+    private boolean executeBloodMoonSpecialAttack(MoonsConfig config, Rs2NpcModel bloodMoon) {
+        // Exit early if player is already doing something
+        if (Rs2Player.isMoving()) {
+            return false;
+        }
+
+        if (bloodMoon == null || bloodMoon.isDead()) {
+            return false;
+        }
+
+        // Check if special attack should be used
+        var specEnergy = Rs2Combat.getSpecEnergy();
+        int healthPercentage = (bloodMoon.getHealthRatio() * 100) / bloodMoon.getHealthScale();
+        Microbot.log("Blood Moon health: " + healthPercentage + "%, Special energy: " + specEnergy);
+
+        if (specEnergy >= 300 && healthPercentage <= 40 && config.useSpecialAttack()) {
+            Microbot.log("Attempting special attack at " + healthPercentage + "% boss health");
+
+            // Equip all required items from comma-separated list
+            String[] items = config.bloodMoonSpecialWeapon().trim().split(",");
+            boolean equipmentChanged = false;
+
+            for (String item : items) {
+                item = item.trim();
+                if (!item.isEmpty() && !Rs2Equipment.isWearing(item)) {
+                    Rs2Inventory.wear(item);
+                    equipmentChanged = true;
+                }
+            }
+
+            // Find the actual weapon from equipped items for special attack energy
+            var specWeapon = Arrays.stream(SpecialAttackWeaponEnum.values())
+                    .filter(x -> {
+                        for (String item : items) {
+                            if (x.getName().equalsIgnoreCase(item.trim()) && Rs2Equipment.isWearing(item.trim())) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    })
+                    .findFirst()
+                    .orElse(null);
+
+            int specEnergyRequired = (specWeapon == null) ? 500 : specWeapon.getEnergyRequired();
+            Microbot.log("Special attack weapon found: " + (specWeapon != null ? specWeapon.getName() : "Unknown") +
+                    ", Energy required: " + specEnergyRequired);
+
+            // Only proceed if we have enough energy
+            if (specEnergy >= specEnergyRequired) {
+                // Enable special attack
+                Rs2Combat.setSpecState(true, specEnergyRequired);
+                Microbot.log("Activating special attack mode");
+
+                // Wait for special attack to be enabled
+                if (sleepUntil(Rs2Combat::getSpecState, 2000)) {
+                    // Store current energy to verify it decreases
+                    int energyBefore = Rs2Combat.getSpecEnergy();
+
+                    // Only attack once after confirming special is active
+                    Rs2Npc.attack(bloodMoon);
+                    Microbot.log("Attacking with special attack");
+
+                    // Wait longer for the special attack animation
+                    Rs2Player.waitForAnimation(1800);
+
+                    // Verify special attack was used by checking energy decrease
+                    if (sleepUntil(() -> Rs2Combat.getSpecEnergy() < energyBefore, 1500)) {
+                        Microbot.log("Special attack executed successfully");
+                        return true;
+                    } else {
+                        Microbot.log("Special attack may have failed - no energy decrease detected");
+                    }
+                } else {
+                    Microbot.log("Failed to activate special attack mode");
+                }
+            }
+        }
+
+        return false;
+    }
+
+    private void handleFloorSafeSpot(WorldPoint playerLocation, BossToKill bossToKill) {
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
         WorldPoint floorTileLocation = (floorTileNPC != null) ? floorTileNPC.getWorldLocation() : null;
         switch (bossToKill) {
@@ -851,6 +936,9 @@ public class MoonsScript extends Script {
         if (Rs2Player.getWorldLocation().distanceTo(MoonsConstants.COOKER_LOCATION) > 5) {
             Rs2Walker.walkTo(MoonsConstants.COOKER_LOCATION);
             return;
+        }
+        if (Rs2Inventory.isFull()) {
+            Rs2Inventory.drop(MoonsConstants.RAW_FOOD_ID);
         }
 
         Rs2GameObject.interact(MoonsConstants.SUPPLY_BOX);
