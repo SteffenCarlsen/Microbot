@@ -533,9 +533,9 @@ public class MoonsScript extends Script {
                     .min(Comparator.comparingLong(pair -> MoonsPlugin.globalTickCount - pair.getValue()))
                     .orElse(null);
             if (newestEclipse != null) {
-                WorldPoint targetLocation = newestEclipse.getKey();
+                var targetLocation = newestEclipse.getKey();
                 Microbot.log("Attacking newest Eclipse clone (spawned " + (MoonsPlugin.globalTickCount - newestEclipse.getValue()) + " ticks ago)");
-                Rs2Walker.walkFastCanvas(targetLocation);
+                Rs2Walker.walkFastLocal(targetLocation);
             }
         }
     }
@@ -553,7 +553,7 @@ public class MoonsScript extends Script {
             Microbot.log("Null shield location");
             return;
         }
-
+        Microbot.log("Shield location: " + shieldLocation);
         // Safe tile has spawned, prioritize it over shield following
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
         if (floorTileNPC != null) {
@@ -678,7 +678,7 @@ public class MoonsScript extends Script {
 
     private void handleWeaponFreeze() {
         var weaponFreeze = Rs2Npc.getNpcs("Frozen weapons").collect(Collectors.toList());
-        if (weaponFreeze.isEmpty()) {
+        if (weaponFreeze == null || weaponFreeze.isEmpty()) {
             return;
         }
 
@@ -805,7 +805,6 @@ public class MoonsScript extends Script {
             }
 
             // Get the Blood Moon boss location (center of the room)
-            var bloodMoonNpc = Rs2Npc.getNpc(MoonsConstants.BLOOD_MOON_NPC_ID);
             WorldPoint centerPoint = new WorldPoint(1392, 9632, 0);
 
             // Move to a safe tile near center if standing on a bloodspot

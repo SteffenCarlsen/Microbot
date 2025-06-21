@@ -3,6 +3,7 @@ package net.runelite.client.plugins.microbot.TaF.MoonsofPeril;
 import com.google.inject.Provides;
 import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.NPC;
+import net.runelite.api.coords.LocalPoint;
 import net.runelite.api.coords.WorldPoint;
 import net.runelite.api.events.GameObjectSpawned;
 import net.runelite.api.events.GameTick;
@@ -46,7 +47,7 @@ import static net.runelite.client.plugins.microbot.util.Global.sleepUntil;
 public class MoonsPlugin extends Plugin {
     public static long lastBloodSpecialSpawnTick = 0;
     public static long globalTickCount = 0;
-    public static List<MutablePair<WorldPoint, Long>> eclipseNpcs = new ArrayList<>();
+    public static List<MutablePair<LocalPoint, Long>> eclipseNpcs = new ArrayList<>();
     private static ScheduledExecutorService tileExecutor;
     @Inject
     public MoonsScript moonsScript;
@@ -226,8 +227,8 @@ public class MoonsPlugin extends Plugin {
             Microbot.log("Eclipse NPC spawned: " + npcSpawned.getNpc().getId() + " at " + npcSpawned.getNpc().getWorldLocation() + " tick: " + globalTickCount);
             var npc = npcSpawned.getNpc();
             if (npc.getId() == MoonsConstants.ECLIPSE_NPC_ID) {
-                final var tile = npc.getWorldLocation();
-                eclipseNpcs.add(new MutablePair<WorldPoint, Long>(tile, globalTickCount));
+                final var tile = npc.getLocalLocation();
+                eclipseNpcs.add(new MutablePair<LocalPoint, Long>(tile, globalTickCount));
             }
         } else {
             eclipseNpcs.clear();
