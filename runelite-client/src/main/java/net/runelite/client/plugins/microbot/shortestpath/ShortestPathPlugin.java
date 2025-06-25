@@ -195,9 +195,8 @@ public class ShortestPathPlugin extends Plugin implements KeyListener {
                 .build();
         clientToolbar.addNavigation(navButton);
 
-        Rs2Walker.setConfig(config);
         shortestPathScript = new ShortestPathScript();
-        shortestPathScript.run();
+        shortestPathScript.run(config);
 
         overlayManager.add(pathOverlay);
         overlayManager.add(pathMinimapOverlay);
