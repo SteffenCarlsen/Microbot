@@ -41,53 +41,8 @@ public class AmmoniteCrabScript extends Script {
                 if (!Microbot.isLoggedIn()) return;
                 if (!super.run()) return;
                 long startTime = System.currentTimeMillis();
-                Rs2Combat.enableAutoRetialiate();
-
-                if (otherPlayerDetected() && !Rs2Combat.inCombat()) {
-                    hijackTimer++;
-                } else {
-                    hijackTimer = 0;
-                }
-
-                if (hijackTimer > 6) {
-                    ammoniteCrabState = AmmoniteCrabState.HOP_WORLD;
-                }
-
-                if (Microbot.getClient().getLocalPlayer().getWorldLocation().distanceTo(config.crabLocation().getWorldhopLocation()) > 10 && (ammoniteCrabState != AmmoniteCrabState.RESET_AGGRO && ammoniteCrabState != AmmoniteCrabState.WALK_BACK && ammoniteCrabState != AmmoniteCrabState.BANK)) {
-                    ammoniteCrabState = AmmoniteCrabState.WALK_BACK;
-                    resetAggro(config);
-                    resetAfkTimer();
-                }
-
-                if (Rs2Combat.inCombat() && ammoniteCrabState != AmmoniteCrabState.AFK && ammoniteCrabState != AmmoniteCrabState.FIGHT) {
-                    // If already in combat, ensure we're in FIGHT state
-                    ammoniteCrabState = AmmoniteCrabState.FIGHT;
-                }
-                // Only scan if we're not already doing something else important and not in combat
-                else if (ammoniteCrabState != AmmoniteCrabState.RESET_AGGRO &&
-                        ammoniteCrabState != AmmoniteCrabState.WALK_BACK &&
-                        ammoniteCrabState != AmmoniteCrabState.HOP_WORLD &&
-                        ammoniteCrabState != AmmoniteCrabState.BANK &&
-                        ammoniteCrabState != AmmoniteCrabState.FIGHT &&
-                        ammoniteCrabState != AmmoniteCrabState.AFK) {
-                    ammoniteCrabState = AmmoniteCrabState.SCANNING_WORLD;
-                }
-
-                if (config.useFood() || config.usePotions()) {
-                    Rs2Player.eatAt(50);
-                    usePotions(config);
-                    if (Rs2Inventory.getInventoryFood().isEmpty()) {
-                        ammoniteCrabState = AmmoniteCrabState.BANK;
-                        Rs2Bank.walkToBank(BankLocation.FOSSIL_ISLAND);
-                        if (Rs2Bank.useBank()) {
-                            if (config.usePotions()) {
-                                Rs2Bank.withdrawX(config.potions().getPotionName() + "(4)", config.withdrawNumber());
-                            }
-                            Rs2Bank.withdrawAll(config.food().getName(), true);
-                            ammoniteCrabState = AmmoniteCrabState.WALK_BACK;
-                        }
-                        return;
-                    }
+                if (ammoniteCrabState != AmmoniteCrabState.SCANNING_WORLD) {
+                    preStateChecks(config);
                 }
 
                 switch (ammoniteCrabState) {
@@ -130,28 +85,16 @@ public class AmmoniteCrabScript extends Script {
                         break;
                     case HOP_WORLD:
                         int world = Login.getRandomWorld(true, null);
-                        boolean isHopped = Microbot.hopToWorld(world);
-                        if (isHopped) {
-                            boolean result = sleepUntil(() -> Rs2Widget.findWidget("Switch World") != null);
-                            if (result) {
-                                Rs2Keyboard.keyPress(KeyEvent.VK_SPACE);
-                                sleepUntil(() -> Microbot.getClient().getGameState() == GameState.HOPPING);
-                                sleepUntil(() -> Microbot.getClient().getGameState() == GameState.LOGGED_IN);
-                                sleep(1200,2000);
-                                // After successful hop, reset counters and scan the area
-                                timesHopped = 0;
-                                hijackTimer = 0;
-                                ammoniteCrabState = AmmoniteCrabState.SCANNING_WORLD;
-                            }
-                        } else {
-                            // If failed to hop, increment counter and try again if under limit
-                            timesHopped++;
-                            if (timesHopped > 10) {
-                                // If too many failed hops, reset and try regular play
-                                timesHopped = 0;
-                                ammoniteCrabState = AmmoniteCrabState.SCANNING_WORLD;
-                            }
-                        }
+                        Microbot.hopToWorld(world);
+                        timesHopped++;
+                        boolean result = sleepUntil(() -> Rs2Widget.findWidget("Switch World") != null);
+                        Rs2Keyboard.keyPress(KeyEvent.VK_SPACE);
+                        sleepUntil(() -> Microbot.getClient().getGameState() == GameState.HOPPING);
+                        sleepUntil(() -> Microbot.getClient().getGameState() == GameState.LOGGED_IN);
+                        sleep(1200,2000);
+                        // After successful hop, reset counters and scan the area
+                        hijackTimer = 0;
+                        ammoniteCrabState = AmmoniteCrabState.SCANNING_WORLD;
                         break;
                     case SCANNING_WORLD:
                         scanAmmoniteCrabLocation(config);
@@ -162,6 +105,59 @@ public class AmmoniteCrabScript extends Script {
             }
         }, 0, 1000, TimeUnit.MILLISECONDS);
         return true;
+    }
+
+    private void preStateChecks(AmmoniteCrabConfig config) {
+        Rs2Combat.enableAutoRetialiate();
+        if (otherPlayerDetected() && !Rs2Combat.inCombat()) {
+            hijackTimer++;
+        } else {
+            hijackTimer = 0;
+        }
+
+        if (hijackTimer > 6) {
+            ammoniteCrabState = AmmoniteCrabState.HOP_WORLD;
+        }
+
+        if (Microbot.getClient().getLocalPlayer().getWorldLocation().distanceTo(config.crabLocation().getWorldhopLocation()) > 10 && (ammoniteCrabState != AmmoniteCrabState.RESET_AGGRO && ammoniteCrabState != AmmoniteCrabState.WALK_BACK && ammoniteCrabState != AmmoniteCrabState.BANK)) {
+            ammoniteCrabState = AmmoniteCrabState.WALK_BACK;
+            resetAggro(config);
+            resetAfkTimer();
+        }
+
+        if (Rs2Combat.inCombat() && ammoniteCrabState != AmmoniteCrabState.AFK && ammoniteCrabState != AmmoniteCrabState.FIGHT) {
+            // If already in combat, ensure we're in FIGHT state
+            ammoniteCrabState = AmmoniteCrabState.FIGHT;
+        }
+        // Only scan if we're not already doing something else important and not in combat
+        else if (ammoniteCrabState != AmmoniteCrabState.RESET_AGGRO &&
+                ammoniteCrabState != AmmoniteCrabState.WALK_BACK &&
+                ammoniteCrabState != AmmoniteCrabState.HOP_WORLD &&
+                ammoniteCrabState != AmmoniteCrabState.BANK &&
+                ammoniteCrabState != AmmoniteCrabState.FIGHT &&
+                ammoniteCrabState != AmmoniteCrabState.AFK) {
+            ammoniteCrabState = AmmoniteCrabState.SCANNING_WORLD;
+        }
+
+        if (config.useFood() || config.usePotions()) {
+            if (config.useFood()) {
+                Rs2Player.eatAt(50);
+            }
+            if (config.usePotions()) {
+                usePotions(config);
+            }
+            if ((config.useFood() && Rs2Inventory.getInventoryFood().isEmpty()) || (config.usePotions() && Rs2Inventory.getFilteredPotionItemsInInventory(config.potions().getPotionName()).isEmpty())) {
+                ammoniteCrabState = AmmoniteCrabState.BANK;
+                Rs2Bank.walkToBank(BankLocation.FOSSIL_ISLAND);
+                if (Rs2Bank.useBank()) {
+                    if (config.usePotions()) {
+                        Rs2Bank.withdrawX(config.potions().getPotionName() + "(4)", config.withdrawNumber());
+                    }
+                    Rs2Bank.withdrawAll(config.food().getName(), true);
+                    ammoniteCrabState = AmmoniteCrabState.WALK_BACK;
+                }
+            }
+        }
     }
 
     private void scanAmmoniteCrabLocation(AmmoniteCrabConfig config) {
