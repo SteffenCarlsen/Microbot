@@ -1255,7 +1255,12 @@ public class Rs2Player {
 
         // If superCombat is specified and the skill is Attack, Strength, or Defence, try super combat potions first
         if (superCombat && (skill == Skill.ATTACK || skill == Skill.STRENGTH || skill == Skill.DEFENCE)) {
-            if (usePotion(Rs2Potion.getCombatPotionsVariants().toArray(new String[0]))) {
+            // for Defence, exclude the basic "combat potion"
+            List<String> combatVariants = new ArrayList<>(Rs2Potion.getCombatPotionsVariants());
+            if (skill == Skill.DEFENCE) {
+                combatVariants.remove("combat potion");
+            }
+            if (usePotion(combatVariants.toArray(new String[0]))) {
                 return true;
             }
         }
@@ -1934,7 +1939,7 @@ public class Rs2Player {
      *
      * @return {@code true} if the player has finished Tutorial Island, {@code false} otherwise.
      */
-    public static boolean isInTutorialIsland() {
+    public static boolean hasCompletedTutorialIsland() {
         return Microbot.getVarbitPlayerValue(281) >= 1000;
     }
 }
