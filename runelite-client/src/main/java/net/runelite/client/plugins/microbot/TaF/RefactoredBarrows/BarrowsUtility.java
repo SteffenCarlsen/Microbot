@@ -9,7 +9,7 @@ public class BarrowsUtility {
         int withdrawQuantity;
         Rs2ItemModel rs2Item = Rs2Inventory.get(itemId);
         if (rs2Item != null && rs2Item.isStackable()) {
-            withdrawQuantity = quantity - rs2Item.quantity;
+            withdrawQuantity = quantity - rs2Item.getQuantity();
             if (Rs2Inventory.hasItemAmount(itemId, quantity)) {
                 return 0;
             }

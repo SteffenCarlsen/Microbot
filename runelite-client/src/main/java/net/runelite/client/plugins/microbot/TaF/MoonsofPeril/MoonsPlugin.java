@@ -14,6 +14,7 @@ import net.runelite.client.eventbus.Subscribe;
 import net.runelite.client.plugins.Plugin;
 import net.runelite.client.plugins.PluginDescriptor;
 import net.runelite.client.plugins.microbot.Microbot;
+import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.BossToKill;
 import net.runelite.client.plugins.microbot.TaF.MoonsofPeril.enums.MoonsState;
 import net.runelite.client.plugins.microbot.util.misc.TimeUtils;
 import net.runelite.client.plugins.microbot.util.npc.Rs2Npc;
@@ -109,10 +110,17 @@ public class MoonsPlugin extends Plugin {
                             if (floorTileLocation == null) {
                                 return;
                             }
+                            if (floorTileLocation.distanceTo(Rs2Player.getWorldLocation()) > 3) {
+                                Rs2Walker.walkFastCanvas(floorTileLocation);
+                            }
 
                             Rs2NpcModel bloodJaguar = MoonsHelpers.getClosestJaguar(floorTileLocation);
                             if (bloodJaguar == null) {
                                 return;
+                            }
+
+                            if (bloodJaguar.getWorldLocation().distanceTo(Rs2Player.getWorldLocation()) > 3) {
+                                Rs2Npc.attack(bloodJaguar);
                             }
 
                             WorldPoint closestTile = MoonsScript.bloodMoonSafeCircles.stream()
@@ -159,6 +167,7 @@ public class MoonsPlugin extends Plugin {
                 }
             } catch (Exception e) {
                 Microbot.log("Error in jaguar tracking: " + e.getMessage());
+                e.printStackTrace();
             }
         }, 0, 100, TimeUnit.MILLISECONDS);
     }
@@ -223,12 +232,22 @@ public class MoonsPlugin extends Plugin {
 
     @Subscribe
     private void onNpcSpawned(NpcSpawned npcSpawned) {
+        var npc = npcSpawned.getNpc();
         if (MoonsScript.moonsState == MoonsState.FIGHTING_ECLIPSE) {
             Microbot.log("Eclipse NPC spawned: " + npcSpawned.getNpc().getId() + " at " + npcSpawned.getNpc().getWorldLocation() + " tick: " + globalTickCount);
-            var npc = npcSpawned.getNpc();
             if (npc.getId() == MoonsConstants.ECLIPSE_NPC_ID) {
                 final var tile = npc.getLocalLocation();
                 eclipseNpcs.add(new MutablePair<LocalPoint, Long>(tile, globalTickCount));
+            }
+        } else if (MoonsScript.moonsState == MoonsState.FIGHTING_BLOOD_MOON) {
+            if (npc.getId() == MoonsConstants.BLOOD_JAGUAR_NPC_ID || npc.getId() == MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE) {
+                Microbot.log("Moving to safe circle in onNpcSpawned");
+                var playerLocation = Rs2Player.getWorldLocation();
+                scheduledExecutorService.execute(() -> {
+                    if (playerLocation != null) {
+                        MoonsScript.handleFloorSafeSpot(playerLocation, BossToKill.BLOOD);
+                    }
+                });
             }
         } else {
             eclipseNpcs.clear();

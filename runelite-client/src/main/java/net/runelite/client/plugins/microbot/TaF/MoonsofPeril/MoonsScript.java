@@ -1,5 +1,6 @@
 package net.runelite.client.plugins.microbot.TaF.MoonsofPeril;
 
+import lombok.extern.slf4j.Slf4j;
 import net.runelite.api.GameObject;
 import net.runelite.api.NPC;
 import net.runelite.api.Skill;
@@ -33,7 +34,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.stream.Collectors;
 
 import static net.runelite.client.plugins.microbot.util.antiban.enums.ActivityIntensity.EXTREME;
-
+@Slf4j
 public class MoonsScript extends Script {
     private static final int bigFishingNet = 305;
     private static final int vialOfWater = 227;
@@ -119,7 +120,7 @@ public class MoonsScript extends Script {
         }
     }
 
-    private static boolean IsFighting() {
+    public static boolean IsFighting() {
         return moonsState == MoonsState.FIGHTING_BLOOD_MOON ||
                 moonsState == MoonsState.FIGHTING_BLUE_MOON ||
                 moonsState == MoonsState.FIGHTING_ECLIPSE;
@@ -149,16 +150,16 @@ public class MoonsScript extends Script {
         }
 
         // Try to execute special attack first if conditions are right
-        if (executeBloodMoonSpecialAttack(config, bloodMoon)) {
-            return; // Special attack executed, nothing else to do
-        }
+//        if (executeBloodMoonSpecialAttack(config, bloodMoon)) {
+//            return; // Special attack executed, nothing else to do
+//        }
 
         if (Rs2Player.isInteracting()) {
             return;
         }
 
         // If special attack wasn't used, handle normal attacks
-        handleEquipment(config, BossToKill.BLOOD);
+        //handleEquipment(config, BossToKill.BLOOD);
 
         if (Rs2Player.getWorldLocation().distanceTo(bloodMoon.getWorldLocation()) < 5) {
             Rs2Npc.attack(bloodMoon);
@@ -253,15 +254,14 @@ public class MoonsScript extends Script {
         return false;
     }
 
-    private void handleFloorSafeSpot(WorldPoint playerLocation, BossToKill bossToKill) {
+    public static void handleFloorSafeSpot(WorldPoint playerLocation, BossToKill bossToKill) {
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
         WorldPoint floorTileLocation = (floorTileNPC != null) ? floorTileNPC.getWorldLocation() : null;
         switch (bossToKill) {
             case BLOOD:
                 var bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
-                long currentTime = System.currentTimeMillis();
-                if (bloodJaguar != null && (currentTime - lastEatTime) > EAT_COOLDOWN_MS) {
-                    return;
+                if (bloodJaguar != null) {
+                    return; // Let handleBloodJaguar handle movement when jaguar exists
                 }
                 handleFloorTileNormally(bloodMoonSafeCircles, playerLocation, floorTileLocation);
                 break;
@@ -290,19 +290,6 @@ public class MoonsScript extends Script {
                 Rs2Walker.walkFastCanvas(closestTile);
                 Rs2Player.eatAt(65);
             }
-        }
-    }
-    public static void attackBoss(String npcName) {
-        Rs2Prayer.toggleQuickPrayer(true);
-        attackBosser(Collections.singletonList(npcName));
-    }
-
-    public static void attackBosser(List<String> npcNames) {
-        for (String npcName : npcNames) {
-            var npc = Rs2Npc.getNpc(npcName);
-            if (npc == null) continue;
-            Rs2Npc.attack(npc);
-            return;
         }
     }
 
@@ -344,7 +331,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_BLOOD_MOON:
                         handleEquipment(config, BossToKill.BLOOD);
-                        Rs2AttackStyles.setAttackStyle(AttackType.SLASH);
+                        //Rs2AttackStyles.setAttackStyle(AttackType.SLASH);
                         Rs2Walker.walkTo(MoonsConstants.BLOOD_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.BLOOD_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.BLOOD_STATUE, "Use");
@@ -353,8 +340,8 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case FIGHTING_BLOOD_MOON:
-                        handleBloodJaguar();
                         handleFloorSafeSpot(playerLocation, BossToKill.BLOOD);
+                        handleBloodJaguar();
                         handleBloodspotSpecials(playerLocation);
                         ConsumePotionsAndFood(config, currentTime);
                         handlePrayer();
@@ -367,7 +354,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_BLUE_MOON:
                         handleEquipment(config, BossToKill.MOON);
-                        Rs2AttackStyles.setAttackStyle(AttackType.CRUSH);
+                        //Rs2AttackStyles.setAttackStyle(AttackType.CRUSH);
                         Rs2Walker.walkTo(MoonsConstants.BLUE_MOON_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.BLUE_MOON_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.BLUE_MOON_STATUE, "Use");
@@ -390,7 +377,7 @@ public class MoonsScript extends Script {
                         break;
                     case GOING_TO_ECLIPSE:
                         handleEquipment(config, BossToKill.ECLIPSE);
-                        Rs2AttackStyles.setAttackStyle(AttackType.STAB);
+                        //Rs2AttackStyles.setAttackStyle(AttackType.STAB);
                         Rs2Walker.walkTo(MoonsConstants.ECLIPSE_SHRINE_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.ECLIPSE_SHRINE_LOCATION) < 5) {
                             Rs2GameObject.interact(MoonsConstants.ECLIPSE_MOON_STATUE, "Use");
@@ -449,6 +436,7 @@ public class MoonsScript extends Script {
 
                 long endTime = System.currentTimeMillis();
                 long totalTime = endTime - startTime;
+                log.debug("Total loop time: " + totalTime + " ms");
             } catch (Exception e) {
                 Microbot.log("Error: " + e);
                 e.printStackTrace();
@@ -496,7 +484,6 @@ public class MoonsScript extends Script {
                 }
             }
         }
-        sleep(1200);
     }
 
     private void healAndPrayWhenGettingSupplies(MoonsConfig config, long currentTime) {
@@ -622,8 +609,8 @@ public class MoonsScript extends Script {
                 var composition= eclipse.getComposition();
                 if (composition != null) {
                     var actions = composition.getActions();
-                    if (actions != null) {
-                        if (Arrays.stream(actions).anyMatch ("Attack"::equals)) {
+                    if (actions != null && actions.length > 0) {
+                        if (Arrays.asList(actions).contains("Attack")) {
                             Rs2Npc.attack(eclipse);
                         }
                     }
@@ -757,10 +744,6 @@ public class MoonsScript extends Script {
             return;
         }
 
-//        if (!Rs2Combat.inCombat() && !Rs2Player.isMoving()) {
-//            handleFloorTileNormally(bloodMoonSafeCircles, Rs2Player.getWorldLocation(), floorTileLocation);
-//            return;
-//        }
         WorldPoint playerLocation = Rs2Player.getWorldLocation();
         WorldPoint jaguarLocation = bloodJaguar.getWorldLocation();
 
@@ -1024,10 +1007,7 @@ public class MoonsScript extends Script {
     }
 
     private boolean shouldMakeTea() {
-        return Rs2Inventory.hasItem(29217) &&
-                !Rs2Inventory.hasItem(29216) &&
-                Microbot.getClient().getEnergy() < 7_000 &&
-                Rs2Player.getWorldLocation().distanceTo(MoonsConstants.SUPPLIES_EXIT_LOCATION) > 10;
+        return Microbot.getClient().getEnergy() < 7_000;
     }
 
     private void makeTea() {
@@ -1037,7 +1017,8 @@ public class MoonsScript extends Script {
     private boolean shouldMoveToExit(MoonsConfig config) {
         return Rs2Inventory.itemQuantity(MoonsConstants.COOKED_FOOD_ID) >= config.foodAmount() &&
                 !Rs2Inventory.hasItem(MoonsConstants.RAW_FOOD_ID) &&
-                Microbot.getClient().getEnergy() > 6_000 && Rs2Player.distanceTo(MoonsConstants.SUPPLIES_EXIT_LOCATION) > 10;
+                Microbot.getClient().getEnergy() > 6_000 &&
+                Rs2Player.distanceTo(MoonsConstants.SUPPLIES_EXIT_LOCATION) > 10;
     }
 
     private void moveToExit() {
