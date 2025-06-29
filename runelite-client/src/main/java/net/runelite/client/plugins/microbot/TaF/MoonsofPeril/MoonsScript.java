@@ -71,23 +71,14 @@ public class MoonsScript extends Script {
     }
 
     private void preStateHandling(MoonsConfig config) {
-        WorldPoint topLeft = new WorldPoint(1400, 9640, 0);
-        WorldPoint bottomRight = new WorldPoint(1384, 9624, 0);
-
         Rs2Camera.setZoom(128);
-
-        WorldPoint playerLocation = Rs2Player.getWorldLocation();
         var bossToKill = getBossToKill(config);
         if (bossToKill == null) {
             moonsState = MoonsState.GOING_TO_LOOT;
             return;
         }
 
-        if (playerLocation.getX() <= topLeft.getX() && playerLocation.getX() >= bottomRight.getX() && playerLocation.getY() <= topLeft.getY() && playerLocation.getY() >= bottomRight.getY()) {
-            if (moonsState != MoonsState.FIGHTING_BLOOD_MOON) {
-                moonsState = MoonsState.FIGHTING_BLOOD_MOON;
-            }
-        } else if (!IsFighting() && MoonsHelpers.needsRestock(config)) {
+        if (!IsFighting() && MoonsHelpers.needsRestock(config)) {
             if (moonsState != MoonsState.GETTING_SUPPLIES && moonsState != MoonsState.GOING_TO_COOKER) {
                 moonsState = MoonsState.GOING_TO_COOKER;
             }
@@ -336,6 +327,7 @@ public class MoonsScript extends Script {
                         healAndPrayWhenGettingSupplies(config, currentTime);
                         break;
                     case GOING_TO_BLOOD_MOON:
+                        Rs2GameObject.interact(MoonsConstants.COOKER_OBJECT_ID, "Make-cuppa");
                         handleEquipment(config, BossToKill.BLOOD);
                         //Rs2AttackStyles.setAttackStyle(AttackType.SLASH);
                         Rs2Walker.walkTo(MoonsConstants.BLOOD_SHRINE_LOCATION);
@@ -359,6 +351,7 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case GOING_TO_BLUE_MOON:
+                        Rs2GameObject.interact(MoonsConstants.COOKER_OBJECT_ID, "Make-cuppa");
                         handleEquipment(config, BossToKill.MOON);
                         //Rs2AttackStyles.setAttackStyle(AttackType.CRUSH);
                         Rs2Walker.walkTo(MoonsConstants.BLUE_MOON_SHRINE_LOCATION);
@@ -382,6 +375,7 @@ public class MoonsScript extends Script {
                         }
                         break;
                     case GOING_TO_ECLIPSE:
+                        Rs2GameObject.interact(MoonsConstants.COOKER_OBJECT_ID, "Make-cuppa");
                         handleEquipment(config, BossToKill.ECLIPSE);
                         //Rs2AttackStyles.setAttackStyle(AttackType.STAB);
                         Rs2Walker.walkTo(MoonsConstants.ECLIPSE_SHRINE_LOCATION);
@@ -409,7 +403,7 @@ public class MoonsScript extends Script {
                     case GOING_TO_LOOT:
                         Rs2Prayer.disableAllPrayers();
                         Rs2Player.eatAt(80);
-                        Rs2GameObject.interact(51362, "Make-cuppa");
+                        Rs2GameObject.interact(MoonsConstants.COOKER_OBJECT_ID, "Make-cuppa");
                         sleep(3000);
                         Rs2Walker.walkTo(MoonsConstants.LOOT_LOCATION);
                         if (Rs2Player.distanceTo(MoonsConstants.LOOT_LOCATION) < 5) {
@@ -765,19 +759,19 @@ public class MoonsScript extends Script {
         if (currentTime - lastEatTime > EAT_COOLDOWN_MS && currentHitpoints <= config.eatAt()) {
             Rs2Player.useFood();
             lastEatTime = currentTime;
-            Microbot.log("Eating food at " + config.eatAt() + "% health.");
+            Microbot.log("Eating food at " + config.eatAt() + " health.");
         }
 
         int currentPrayerPoints = Microbot.getClient().getBoostedSkillLevel(Skill.PRAYER);
         if (currentTime - lastPrayerTime > PRAYER_COOLDOWN_MS && currentPrayerPoints <= config.prayerAt()) {
             Rs2Inventory.interact("Moonlight potion", "drink");
             lastPrayerTime = currentTime;
-            Microbot.log("Drinking prayer potion at " + config.prayerAt() + "% prayer points.");
+            Microbot.log("Drinking prayer potion at " + config.prayerAt() + " prayer points.");
         }
     }
 
     private void handleBloodspotSpecials(WorldPoint playerLocation) {
-        List<WorldPoint> bloodSpotsWorldPoints = Rs2GameObject.getGameObjects(x -> x.getId() == 51046)
+        List<WorldPoint> bloodSpotsWorldPoints = Rs2GameObject.getGameObjects(x -> x.getId() == MoonsConstants.BLOOD_POOL_FORMING_ID)
                 .stream()
                 .map(GameObject::getWorldLocation)
                 .collect(Collectors.toList());
@@ -1012,13 +1006,13 @@ public class MoonsScript extends Script {
 
     private void makeTea() {
         Rs2GameObject.interact(51362, "Make-cuppa");
-        sleepUntil(() -> !Rs2Player.isMoving());
-        sleepUntil(() -> Microbot.getClient().getEnergy() > 6_000);
+        sleepUntil(() -> !Rs2Player.isMoving(), 5000);
+        sleepUntil(() -> Microbot.getClient().getEnergy() > 6_000, 5000);
     }
 
     private boolean shouldMoveToExit(MoonsConfig config) {
         return Rs2Inventory.itemQuantity(MoonsConstants.COOKED_FOOD_ID) >= config.foodAmount() &&
-                !Rs2Inventory.hasItem(MoonsConstants.RAW_FOOD_ID) &&
+                Rs2Inventory.itemQuantity(MoonsConstants.RAW_FOOD_ID) <= 0 &&
                 Microbot.getClient().getEnergy() > 6_000 &&
                 Rs2Player.distanceTo(MoonsConstants.SUPPLIES_EXIT_LOCATION) > 10;
     }

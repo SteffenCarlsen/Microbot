@@ -192,8 +192,8 @@ public interface MoonsConfig extends Config {
     // Consumable settings for the script
     @ConfigItem(
             keyName = "eatAt",
-            name = "Eat at %?",
-            description = "Eat food when health is below this percentage.",
+            name = "Eat at?",
+            description = "Eat food when health is below this.",
             position = 1,
             section = consumableSettings
     )
@@ -203,8 +203,8 @@ public interface MoonsConfig extends Config {
 
     @ConfigItem(
             keyName = "prayerAt",
-            name = "Prayer at %?",
-            description = "Drink prayer potion when prayer is below this percentage.",
+            name = "Prayer at?",
+            description = "Drink prayer potion when prayer is below this.",
             position = 2,
             section = consumableSettings
     )
