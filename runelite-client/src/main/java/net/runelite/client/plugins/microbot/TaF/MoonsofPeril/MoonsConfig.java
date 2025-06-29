@@ -42,6 +42,13 @@ public interface MoonsConfig extends Config {
     )
     String farmingSettings = "farmingSettings";
 
+    @ConfigSection(
+            name = "Debug settings",
+            description = "Settings for debugging",
+            position = 3
+    )
+    String developerSettings = "Developer settings";
+
     // General settings for the script
     @ConfigItem(
             keyName = "foodAmount",
@@ -128,11 +135,21 @@ public interface MoonsConfig extends Config {
     }
 
     @ConfigItem(
+            keyName = "overrideState",
+            name = "Override state?",
+            description = "Enable to override script starting state",
+            section = developerSettings,
+            position = 1
+    )
+    default boolean overrideState() {
+        return false;
+    }
+    @ConfigItem(
             keyName = "State",
             name = "State",
             description = "Choose state.",
-            position = 7,
-            section = generalSettings
+            position = 2,
+            section = developerSettings
     )
     default MoonsState getState() {
         return MoonsState.DEFAULT;

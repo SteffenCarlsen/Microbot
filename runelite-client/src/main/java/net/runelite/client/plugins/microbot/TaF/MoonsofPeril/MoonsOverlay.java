@@ -95,12 +95,12 @@ public class MoonsOverlay extends OverlayPanel {
                             .right(String.valueOf(MoonsPlugin.globalTickCount))
                             .rightColor(Color.GREEN)
                             .build());
-                    panelComponent.getChildren().add(LineComponent.builder()
-                            .left("Safe to Move:")
-                            .right(String.valueOf(MoonsScript.moveToBloodTile))
-                            .rightColor(MoonsScript.moveToBloodTile ? Color.GREEN : Color.RED)
-                            .build());
                 }
+                panelComponent.getChildren().add(LineComponent.builder()
+                        .left("Total dangerous tiles:")
+                        .right(String.valueOf(Rs2Tile.getDangerousGraphicsObjectTiles().size()))
+                        .rightColor(Color.RED)
+                        .build());
             }
             // Boss kill status
             var killedNpcs = MoonsHelpers.getBossesKilled();

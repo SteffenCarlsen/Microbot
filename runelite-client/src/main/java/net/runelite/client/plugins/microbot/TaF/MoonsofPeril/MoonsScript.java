@@ -48,10 +48,8 @@ public class MoonsScript extends Script {
     private static final List<WorldPoint> blueMoonSafeCircles = MoonsHelpers.generateSafeCircles(1440, 9680, 0);
     public static MoonsState moonsState = MoonsState.DEFAULT;
     public static MoonsState previousMoonsState = MoonsState.DEFAULT;
-    public static boolean moveToBloodTile = false;
     private static long lastEatTime = -1;
     private long lastPrayerTime = -1;
-    private int attempts = 0;
     public int chestsLooted = 0;
 
     {
@@ -154,7 +152,7 @@ public class MoonsScript extends Script {
 //            return; // Special attack executed, nothing else to do
 //        }
 
-        if (Rs2Player.isInteracting()) {
+        if (Rs2Player.isInteracting() && Rs2Combat.inCombat()) {
             return;
         }
 
@@ -164,6 +162,10 @@ public class MoonsScript extends Script {
         if (Rs2Player.getWorldLocation().distanceTo(bloodMoon.getWorldLocation()) < 5) {
             Rs2Npc.attack(bloodMoon);
         }
+    }
+
+    private void handleThrall(MoonsConfig config) {
+
     }
 
     /**
@@ -300,7 +302,11 @@ public class MoonsScript extends Script {
     }
 
     public boolean run(MoonsConfig config) {
-        moonsState = config.getState();
+        if (config.overrideState()) {
+            moonsState = config.getState();
+        } else {
+            moonsState = MoonsState.GOING_TO_COOKER;
+        }
         Microbot.enableAutoRunOn = true;
         mainScheduledFuture = scheduledExecutorService.scheduleWithFixedDelay(() -> {
             try {
@@ -436,7 +442,6 @@ public class MoonsScript extends Script {
 
                 long endTime = System.currentTimeMillis();
                 long totalTime = endTime - startTime;
-                log.debug("Total loop time: " + totalTime + " ms");
             } catch (Exception e) {
                 Microbot.log("Error: " + e);
                 e.printStackTrace();
@@ -642,6 +647,16 @@ public class MoonsScript extends Script {
         if (braziers.isEmpty() && frostStorm.isEmpty()) {
             return;
         }
+        if (!frostStorm.isEmpty() && braziers.isEmpty()) {
+            try {
+                WorldPoint playerLocation = Rs2Player.getWorldLocation();
+                Rs2Walker.walkFastCanvas(new WorldPoint(1440, 9675, 0));
+                handleFloorTileNormally(blueMoonSafeCircles, playerLocation, new WorldPoint(1440, 9675, 0));
+                return;
+            } catch (Exception e) {
+                Microbot.log("Error handling frost storm safe spots: " + e.getMessage());
+            }
+        }
         if (!braziers.isEmpty()) {
             var closestBrazier = braziers.stream()
                     .min(Comparator.comparingDouble(b -> b.getWorldLocation().distanceTo(Rs2Player.getWorldLocation())))
@@ -651,16 +666,9 @@ public class MoonsScript extends Script {
             }
             if (closestBrazier != null) {
                 Rs2GameObject.interact(closestBrazier, "Light");
-                return;
             }
         }
-        try {
-            WorldPoint playerLocation = Rs2Player.getWorldLocation();
-            Rs2Walker.walkFastCanvas(new WorldPoint(1440, 9675, 0));
-            handleFloorTileNormally(blueMoonSafeCircles, playerLocation, new WorldPoint(1440, 9675, 0));
-        } catch (Exception e) {
-            Microbot.log("Error handling frost storm safe spots: " + e.getMessage());
-        }
+
     }
 
     private void handleWeaponFreeze() {
@@ -724,23 +732,15 @@ public class MoonsScript extends Script {
     public void handleBloodJaguar() {
         // Get safe circle if it exists
         var floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
-        var npcs = Rs2Npc.getNpcs(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE).collect(Collectors.toList());
         WorldPoint floorTileLocation = (floorTileNPC != null) ? floorTileNPC.getWorldLocation() : null;
 
         // Find the jaguar
         Rs2NpcModel bloodJaguar = MoonsHelpers.getClosestJaguar(floorTileLocation);
 
-        if (bloodJaguar == null || floorTileLocation == null) {
-            bloodJaguar = Rs2Npc.getNpc("Blood Jaguar");
-            if (bloodJaguar != null) {
-                Microbot.log("Blood Jaguar found, but no safe tile available.");
-                return;
-            }
-            if (floorTileLocation == null) {
-                if (!npcs.isEmpty()) {
-                    Microbot.log("Safe circle NPCs found, but no safe tile location available.");
-                }
-            }
+        if (bloodJaguar == null) {
+            return;
+        }
+        if (Rs2Player.isMoving()) {
             return;
         }
 
@@ -748,7 +748,7 @@ public class MoonsScript extends Script {
         WorldPoint jaguarLocation = bloodJaguar.getWorldLocation();
 
         // Prioritize safe tile if it exists and we're far from it
-        if (floorTileLocation != null && playerLocation.distanceTo(floorTileLocation) > 5) {
+        if (floorTileLocation != null && playerLocation.distanceTo(floorTileLocation) > 3) {
             Microbot.log("Moving to safe tile before attacking Blood Jaguar");
             Rs2Walker.walkFastCanvas(floorTileLocation);
             return;
@@ -1012,6 +1012,8 @@ public class MoonsScript extends Script {
 
     private void makeTea() {
         Rs2GameObject.interact(51362, "Make-cuppa");
+        sleepUntil(() -> !Rs2Player.isMoving());
+        sleepUntil(() -> Microbot.getClient().getEnergy() > 6_000);
     }
 
     private boolean shouldMoveToExit(MoonsConfig config) {

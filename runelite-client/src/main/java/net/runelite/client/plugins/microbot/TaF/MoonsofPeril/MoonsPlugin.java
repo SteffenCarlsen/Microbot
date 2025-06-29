@@ -148,13 +148,12 @@ public class MoonsPlugin extends Plugin {
                                 playerLocation = Rs2Player.getWorldLocation(); // Get updated position
                                 if (playerLocation != null &&
                                         bloodJaguar != null &&
-                                        !bloodJaguar.isDead() &&
-                                        playerLocation.distanceTo(closestTile) <= 0) {
+                                        !bloodJaguar.isDead()) {
                                     Rs2Npc.attack(bloodJaguar);
                                 }
                             } else {
                                 // If we're already on the safe tile, just attack the jaguar
-                                if (bloodJaguar != null && !bloodJaguar.isDead()) {
+                                if (bloodJaguar != null) {
                                     Rs2Npc.attack(bloodJaguar);
                                 }
                             }
@@ -203,9 +202,7 @@ public class MoonsPlugin extends Plugin {
     @Subscribe
     public void onGameObjectSpawned(GameObjectSpawned event) {
         final var groundObject = event.getGameObject();
-        if (groundObject.getId() == 51046) {
-            //final var tile = groundObject.getWorldLocation();
-            //dangerousGraphicsObjectTiles.add(new MutablePair<>(tile, (4) * 600));
+        if (groundObject.getId() == MoonsConstants.BLOOD_POOL_FORMING_ID) {
             Rs2Tile.addDangerousGameObjectTile(groundObject, (4) * 600);
 
             // Record the tick when blood special spawns
@@ -239,7 +236,7 @@ public class MoonsPlugin extends Plugin {
                 final var tile = npc.getLocalLocation();
                 eclipseNpcs.add(new MutablePair<LocalPoint, Long>(tile, globalTickCount));
             }
-        } else if (MoonsScript.moonsState == MoonsState.FIGHTING_BLOOD_MOON) {
+        /*} else if (MoonsScript.moonsState == MoonsState.FIGHTING_BLOOD_MOON) {
             if (npc.getId() == MoonsConstants.BLOOD_JAGUAR_NPC_ID || npc.getId() == MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE) {
                 Microbot.log("Moving to safe circle in onNpcSpawned");
                 var playerLocation = Rs2Player.getWorldLocation();
@@ -248,7 +245,7 @@ public class MoonsPlugin extends Plugin {
                         MoonsScript.handleFloorSafeSpot(playerLocation, BossToKill.BLOOD);
                     }
                 });
-            }
+            }*/
         } else {
             eclipseNpcs.clear();
         }
