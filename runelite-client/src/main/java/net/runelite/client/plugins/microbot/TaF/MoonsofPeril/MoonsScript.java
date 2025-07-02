@@ -744,12 +744,19 @@ public class MoonsScript extends Script {
         // Prioritize safe tile if it exists and we're far from it
         if (floorTileLocation != null && playerLocation.distanceTo(floorTileLocation) > 3) {
             Microbot.log("Moving to safe tile before attacking Blood Jaguar");
+            if (Rs2Player.isMoving()) {
+                return;
+            }
             Rs2Walker.walkFastCanvas(floorTileLocation);
             return;
         }
         // If we're too far from the jaguar and not already moving or interacting
         if (playerLocation.distanceTo(jaguarLocation) > 5) {
             Microbot.log("Moving to Blood Jaguar");
+            if (Rs2Player.isMoving()) {
+
+                return;
+            }
             Rs2Walker.walkFastCanvas(jaguarLocation);
         }
     }
