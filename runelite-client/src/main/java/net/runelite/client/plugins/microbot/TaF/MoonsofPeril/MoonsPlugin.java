@@ -168,7 +168,7 @@ public class MoonsPlugin extends Plugin {
                 Microbot.log("Error in jaguar tracking: " + e.getMessage());
                 e.printStackTrace();
             }
-        }, 0, 100, TimeUnit.MILLISECONDS);
+        }, 0, 300, TimeUnit.MILLISECONDS);
     }
 
     protected void shutDown() {

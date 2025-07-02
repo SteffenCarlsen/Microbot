@@ -440,7 +440,7 @@ public class MoonsScript extends Script {
                 Microbot.log("Error: " + e);
                 e.printStackTrace();
             }
-        }, 0, 1, TimeUnit.MILLISECONDS);
+        }, 0, 300, TimeUnit.MILLISECONDS);
         return true;
     }
 
