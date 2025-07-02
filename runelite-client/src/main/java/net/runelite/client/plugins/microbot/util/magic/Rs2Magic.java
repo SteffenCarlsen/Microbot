@@ -323,7 +323,7 @@ public class Rs2Magic {
         }
     }
 
-    // humidify
+    @Deprecated(since = "1.9.2 - use Rs2Magic.cast", forRemoval = true)
     public static void humidify() {
         sleepUntil(() -> {
             Rs2Tab.switchToMagicTab();
@@ -592,12 +592,12 @@ public class Rs2Magic {
       
         // Gather available runes from inventory
         Map<Runes, Integer> availableRunes = new HashMap<>();
-        for (Rs2ItemModel item : Rs2Inventory.items()) {
+        Rs2Inventory.items().forEachOrdered(item -> {
             Arrays.stream(Runes.values())
                     .filter(rune -> rune.getItemId() == item.getId())
                     .findFirst()
                     .ifPresent(rune -> availableRunes.merge(rune, item.getQuantity(), Integer::sum));
-        }
+        });
 
         // Optionally add runes from the rune pouch
         if (checkRunePouch) {
@@ -780,12 +780,12 @@ public class Rs2Magic {
 
         // Gather available runes from inventory
         Map<Runes, Integer> availableRunes = new HashMap<>();
-        for (Rs2ItemModel item : Rs2Inventory.items()) {
+        Rs2Inventory.items().forEachOrdered(item -> {
             Arrays.stream(Runes.values())
                     .filter(rune -> rune.getItemId() == item.getId())
                     .findFirst()
                     .ifPresent(rune -> availableRunes.merge(rune, item.getQuantity(), Integer::sum));
-        }
+        });
 
         // Optionally add runes from the rune pouch
         if (checkRunePouch) {
