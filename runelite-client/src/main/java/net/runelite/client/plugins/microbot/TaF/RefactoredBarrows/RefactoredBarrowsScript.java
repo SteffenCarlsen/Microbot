@@ -990,8 +990,7 @@ public class RefactoredBarrowsScript extends Script {
             return false;
         }
         var ourStaff = Rs2Equipment.get(EquipmentInventorySlot.WEAPON);
-        var rs2Staff = Arrays.stream(Rs2Staff.values()).filter(x -> x.getItemID() == ourStaff.getId()).findFirst().orElse(null);
-        var runesToCast = Rs2Magic.getRequiredRunes(ourSpell, rs2Staff, 25, true);
+        var runesToCast = Rs2Magic.getMissingRunes(ourSpell, 200);
         if (runesToCast.isEmpty()) {
             return true;
         }
@@ -1000,15 +999,12 @@ public class RefactoredBarrowsScript extends Script {
 
     public Map<Runes, Integer> getRequiredRunes() {
         Rs2CombatSpells ourSpell = Rs2Magic.getCurrentAutoCastSpell();
-        var ourStaff = Rs2Equipment.get(EquipmentInventorySlot.WEAPON);
-        var rs2Staff = Arrays.stream(Rs2Staff.values()).filter(x -> x.getItemID() == ourStaff.getId()).findFirst().orElse(null);
-        return Rs2Magic.getRequiredRunes(ourSpell, rs2Staff, 50000, true);
+        return Rs2Magic.getMissingRunes(ourSpell, 200);
     }
 
     public Map<Runes, Integer> getRequiredRunes(Rs2Spells spell) {
         var ourStaff = Rs2Equipment.get(EquipmentInventorySlot.WEAPON);
-        var rs2Staff = Arrays.stream(Rs2Staff.values()).filter(x -> x.getItemID() == ourStaff.getId()).findFirst().orElse(null);
-        return Rs2Magic.getRequiredRunes(spell, rs2Staff, 50000, true);
+        return Rs2Magic.getMissingRunes(spell, 10);
     }
 
     public void activatePrayer(BarrowsBrothers brother) {
