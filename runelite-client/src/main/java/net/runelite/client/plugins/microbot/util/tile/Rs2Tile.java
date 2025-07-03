@@ -51,9 +51,16 @@ public abstract class Rs2Tile implements Tile {
 
     /**
      * Adds a dangerous tile to the list of dangerous tiles
-     * @param graphicsObject the graphics object
+     * @param gameObject the gameobject object
      * @param time the time a tile is dangerous in milliseconds
      */
+    public static void addDangerousGameObjectTile(GameObject gameObject, int time) {
+        if (gameObject == null) return;
+        WorldPoint worldPoint = gameObject.getWorldLocation();
+        final MutablePair<WorldPoint, Integer> dangerousTile = MutablePair.of(worldPoint, time);
+        dangerousGraphicsObjectTiles.add(dangerousTile);
+    }
+
     public static void addDangerousGraphicsObjectTile(GraphicsObject graphicsObject, int time) {
         WorldPoint worldPoint;
 
