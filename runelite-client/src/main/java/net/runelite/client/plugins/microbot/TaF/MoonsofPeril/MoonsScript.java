@@ -249,12 +249,32 @@ public class MoonsScript extends Script {
 
     public static void handleFloorSafeSpot(WorldPoint playerLocation, BossToKill bossToKill) {
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
-        WorldPoint floorTileLocation = (floorTileNPC != null) ? floorTileNPC.getWorldLocation() : null;
+        var allNpcs = Rs2Npc.getNpcs(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
+        WorldPoint floorTileLocation;
+        if (allNpcs != null) {
+            List<NPC> npcsList = allNpcs.collect(Collectors.toList());
+            if (npcsList.size() > 1) {
+                // If there are multiple safe circles, prioritize the one farthest to the player
+                floorTileNPC = npcsList.stream()
+                        .max(Comparator.comparingDouble(npc -> npc.getWorldLocation().distanceTo2D(playerLocation)))
+                        .orElse(null);
+            }
+        }
+
+        floorTileLocation = (floorTileNPC != null) ? floorTileNPC.getWorldLocation() : null;
+
         switch (bossToKill) {
             case BLOOD:
                 var bloodJaguar = Rs2Npc.getNpc(MoonsConstants.BLOOD_JAGUAR_NPC_ID);
-                if (bloodJaguar != null) {
-                    return; // Let handleBloodJaguar handle movement when jaguar exists
+                if (bloodJaguar != null && floorTileNPC != null) {
+                    if (Rs2Player.getWorldLocation().distanceTo(floorTileNPC.getWorldLocation()) > 4) {
+                        handleFloorTileNormally(bloodMoonSafeCircles, playerLocation, floorTileLocation);
+                    }
+                    Rs2NpcModel realBloodJaguar = MoonsHelpers.getClosestJaguar(floorTileLocation);
+                    if (realBloodJaguar != null) {
+                        Rs2Npc.attack(realBloodJaguar);
+                    }
+                    return;
                 }
                 handleFloorTileNormally(bloodMoonSafeCircles, playerLocation, floorTileLocation);
                 break;
@@ -539,7 +559,7 @@ public class MoonsScript extends Script {
             Microbot.log("Null shield location");
             return;
         }
-        Microbot.log("Shield location: " + shieldLocation);
+
         // Safe tile has spawned, prioritize it over shield following
         NPC floorTileNPC = Rs2Npc.getNpc(MoonsConstants.PERILOUS_MOONS_SAFE_CIRCLE);
         if (floorTileNPC != null) {
@@ -548,53 +568,103 @@ public class MoonsScript extends Script {
             return;
         }
 
-        // TODO FIX X COORDINATE
-        /*if (shieldLocation.getY() == 9637 && shieldLocation.getX() < 1400) {
-             Rs2Walker.walkTo(new WorldPoint(shieldLocation.getX() + 2, 9638, 0));
-             return;
-        } else if (shieldLocation.getY() == 9626 && shieldLocation.getX() > 1400) {
-
-        }*/
-
-        // Get Eclipse boss location (center of rotation)
-        var eclipseNpc = Rs2Npc.getNpc(MoonsConstants.ECLIPSE_NPC_ID);
-        if (eclipseNpc == null) {
-            return;
-        }
-
-        WorldPoint centerPoint = eclipseNpc.getWorldLocation();
+        WorldPoint centerPoint = new WorldPoint(1488, 9632, 0); // Arena center
         WorldPoint playerLocation = Rs2Player.getWorldLocation();
 
-        // Calculate vector from center to shield
-        double vectorX = shieldLocation.getX() - centerPoint.getX();
-        double vectorY = shieldLocation.getY() - centerPoint.getY();
+        // Define the four anchor points (SW → NW → NE → SE)
+        WorldPoint[] anchorPoints = {
+                new WorldPoint(1483, 9627, 0), // SW
+                new WorldPoint(1483, 9637, 0), // NW
+                new WorldPoint(1493, 9637, 0), // NE
+                new WorldPoint(1493, 9627, 0)  // SE
+        };
 
-        // Calculate distance from center to shield
-        double distanceFromCenter = Math.sqrt(vectorX * vectorX + vectorY * vectorY);
+        // Calculate shield's position relative to the center
+        double angle = Math.atan2(
+                shieldLocation.getY() - centerPoint.getY(),
+                shieldLocation.getX() - centerPoint.getX());
 
+        // Convert angle to degrees for easier comparison
+        double angleDegrees = Math.toDegrees(angle);
+        if (angleDegrees < 0) angleDegrees += 360;
 
-        // Calculate angle of shield relative to center (in radians)
-        double angle = Math.atan2(vectorY, vectorX);
+        // Determine which side of the square the shield is on
+        int sideIndex;
+        WorldPoint nextPoint;
 
-        // Add a small amount to the angle to position ahead of the shield in its rotation direction
-        // Clockwise rotation means we subtract from the angle
-        double adjustedAngle = angle - 0.4;  // Adjust this value as needed
-
-        // Recalculate vector using the adjusted angle
-        double newVectorX = Math.cos(adjustedAngle) * distanceFromCenter;
-        double newVectorY = Math.sin(adjustedAngle) * distanceFromCenter;
-
-        // Create a position 2 tiles ahead in the shield's path
-        int targetX = centerPoint.getX() + (int)Math.round(newVectorX);
-        int targetY = centerPoint.getY() + (int)Math.round(newVectorY);
-
-        WorldPoint targetPosition = new WorldPoint(targetX, targetY, shieldLocation.getPlane());
-
-        // Only move if not already at target position or very close to it
-        if (playerLocation.distanceTo(targetPosition) > 0) {
-            Rs2Walker.walkFastCanvas(targetPosition);
-            Microbot.log("Following shield: Staying ahead in shield's path, shieldposition: " + shieldLocation + ", target position: " + targetPosition);
+        if (angleDegrees >= 315 || angleDegrees < 45) {
+            // Shield on East side, moving from SE to NE
+            sideIndex = 3;
+            nextPoint = anchorPoints[2]; // NE is next
+        } else if (angleDegrees >= 45 && angleDegrees < 135) {
+            // Shield on North side, moving from NE to NW
+            sideIndex = 2;
+            nextPoint = anchorPoints[1]; // NW is next
+        } else if (angleDegrees >= 135 && angleDegrees < 225) {
+            // Shield on West side, moving from NW to SW
+            sideIndex = 1;
+            nextPoint = anchorPoints[0]; // SW is next
+        } else {
+            // Shield on South side, moving from SW to SE
+            sideIndex = 0;
+            nextPoint = anchorPoints[3]; // SE is next
         }
+
+        // Get current side anchor points
+        WorldPoint currentSideStart = anchorPoints[sideIndex];
+        WorldPoint currentSideEnd = nextPoint;
+
+        // Project shield position onto the current side
+        WorldPoint projectedPoint = projectPointOntoLine(shieldLocation, currentSideStart, currentSideEnd);
+
+        // Calculate direction vector for the side
+        double dirX = currentSideEnd.getX() - currentSideStart.getX();
+        double dirY = currentSideEnd.getY() - currentSideStart.getY();
+        double length = Math.sqrt(dirX * dirX + dirY * dirY);
+        dirX = dirX / length;
+        dirY = dirY / length;
+
+        // Calculate the distance from the start of the side to the shield's projected position
+        double shieldDistFromStart = projectedPoint.distanceTo(currentSideStart);
+
+        // Stay just behind the shield (relative to its movement direction), but always on the line
+        double followDistance = 1.0; // 1 tile behind the shield
+        double playerTargetDist = Math.max(0, shieldDistFromStart - followDistance);
+
+        // Calculate the target point for the player, always on the line, just behind the shield
+        int targetX = (int) Math.round(currentSideStart.getX() + dirX * playerTargetDist);
+        int targetY = (int) Math.round(currentSideStart.getY() + dirY * playerTargetDist);
+        WorldPoint targetPoint = new WorldPoint(targetX, targetY, 0);
+
+        // If shield is very close to the end of the side, move to the next anchor
+        if (projectedPoint.distanceTo(currentSideEnd) < 1.5) {
+            targetPoint = nextPoint;
+        }
+
+        // Only move if not already at target position or very close to it and not already moving
+        if (playerLocation.distanceTo(targetPoint) > 0 && !Rs2Player.isMoving()) {
+            Rs2Walker.walkFastCanvas(targetPoint);
+            Microbot.log("Following shield closely, moving to: " + targetPoint);
+        }
+    }
+
+    private WorldPoint projectPointOntoLine(WorldPoint point, WorldPoint lineStart, WorldPoint lineEnd) {
+        double lineLength = lineStart.distanceTo(lineEnd);
+        if (lineLength == 0) return lineStart;
+
+        // Calculate the projection ratio
+        double t = ((point.getX() - lineStart.getX()) * (lineEnd.getX() - lineStart.getX()) +
+                (point.getY() - lineStart.getY()) * (lineEnd.getY() - lineStart.getY())) /
+                (lineLength * lineLength);
+
+        // Clamp t to ensure the projected point is on the line segment
+        t = Math.max(0, Math.min(1, t));
+
+        // Calculate the projected point
+        int projX = (int) (lineStart.getX() + t * (lineEnd.getX() - lineStart.getX()));
+        int projY = (int) (lineStart.getY() + t * (lineEnd.getY() - lineStart.getY()));
+
+        return new WorldPoint(projX, projY, point.getPlane());
     }
 
     private void handleEclipseBossFocus() {
@@ -996,6 +1066,8 @@ public class MoonsScript extends Script {
             sleep(1200, 1600);
         }
         Rs2GameObject.interact(MoonsConstants.FISHING_SPOT_ID, "Exit");
+        sleep(1200, 1600);
+        Rs2Walker.walkTo(MoonsConstants.COOKER_LOCATION);
     }
 
     private boolean shouldCookFood() {
