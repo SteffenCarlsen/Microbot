@@ -414,10 +414,10 @@ public class RefactoredBarrowsScript extends Script {
         return BarrowsBrothers.values()[0];
     }
 
-    private List<BarrowsBrothers> getAlreadyKilledBrothers() {
+    // Changed from private to public
+    public List<BarrowsBrothers> getAlreadyKilledBrothers() {
         if (everyBrotherWasKilled()) {
             SearchingForTunnel = true;
-            Microbot.log("All brothers marked as killed - Checking all brothers for tunnel.");
         }
         List<BarrowsBrothers> alreadyKilledBrothers = new ArrayList<>();
 

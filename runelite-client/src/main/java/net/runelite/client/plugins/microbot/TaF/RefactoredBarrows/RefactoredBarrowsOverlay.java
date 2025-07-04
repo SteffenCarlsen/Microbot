@@ -5,6 +5,7 @@ import net.runelite.client.ui.overlay.OverlayPanel;
 import net.runelite.client.ui.overlay.OverlayPosition;
 import net.runelite.client.ui.overlay.components.LineComponent;
 import net.runelite.client.ui.overlay.components.TitleComponent;
+import net.runelite.client.util.QuantityFormatter;
 
 import javax.inject.Inject;
 import java.awt.*;
@@ -57,14 +58,6 @@ public class RefactoredBarrowsOverlay extends OverlayPanel {
                     .rightColor(Color.CYAN)
                     .build());
 
-            // Progress tracking
-            panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Chests looted:")
-                    .right(Integer.toString(RefactoredBarrowsScript.ChestsOpened))
-                    .leftColor(Color.WHITE)
-                    .rightColor(Color.ORANGE)
-                    .build());
-
             // Tunnel information
             var tunnelBrother = plugin.refactoredBarrowsScript.tunnelBrother != null ? plugin.refactoredBarrowsScript.tunnelBrother.getName() : "Unknown";
             panelComponent.getChildren().add(LineComponent.builder()
@@ -82,14 +75,30 @@ public class RefactoredBarrowsOverlay extends OverlayPanel {
                     .rightColor(Color.YELLOW)
                     .build());
 
+            var killedBrothers = script.getAlreadyKilledBrothers();
+            for (BarrowsBrothers brother : BarrowsBrothers.values()) {
+                boolean killed = killedBrothers.contains(brother);
+                panelComponent.getChildren().add(LineComponent.builder()
+                        .left(brother.getName())
+                        .right(killed ? "✓" : "✗")
+                        .rightColor(killed ? Color.GREEN : Color.RED)
+                        .build());
+            }
+
+            panelComponent.getChildren().add(LineComponent.builder()
+                    .left("Chests looted:")
+                    .right(Integer.toString(RefactoredBarrowsScript.ChestsOpened))
+                    .leftColor(Color.WHITE)
+                    .rightColor(Color.ORANGE)
+                    .build());
             // Rewards section
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left("Pieces found:")
+                    .left("Total loot:")
                     .leftColor(Color.WHITE)
                     .build());
 
             panelComponent.getChildren().add(LineComponent.builder()
-                    .left(RefactoredBarrowsScript.barrowsPieces.toString())
+                    .left(QuantityFormatter.formatNumber(plugin.totalLoot))
                     .leftColor(Color.GREEN)
                     .build());
 
